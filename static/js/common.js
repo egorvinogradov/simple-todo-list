@@ -68,11 +68,10 @@ Model = function(params){
     this._params = params;
     this._initial = [];
     this._current = [];
-};
-
-Model._events = {
-    change: null,
-    revert: null
+    this._events = {
+        change: null,
+        revert: null
+    };
 };
 
 Model.prototype._equals = function(arr1, arr2){
@@ -138,6 +137,7 @@ Model.prototype.fetch = function(callbacks){
     this._initial = mock.slice();
     this._current = mock.slice();
     callbacks.success(mock);
+    return;
 
     $.ajax({
         url: this._params.url,
