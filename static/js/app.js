@@ -120,14 +120,64 @@ App.prototype.sortTasks = function(data){
 };
 
 App.prototype.bindListEvents = function(){
+
     this.els = this.getNodes(this.config.selectors);
+
+    this.els.text.each(function(i, element){
+        element.contentEditable = true;
+    });
+
+    this.els.text._on('focus', function(event){
+        var element = $(event.currentTarget);
+        element.data({
+            before: $.trim(element.html())
+        });
+    }, this);
+
+    this.els.text._on('blur keyup paste', function(event){
+
+        var element = $(event.currentTarget),
+            text = $.trim(element.html()),
+            task,
+            id;
+
+        if ( element.data('text-before') !== text ) {
+            element.data({ before: text });
+            task = element.parents(this.config.selectors.listItem);
+            id = +task.data('id');
+            this.setModel(id, {
+                text: text
+            });
+        }
+    }, this);
+
     this.els.checkbox._on('change', function(event){
         var checkbox = $(event.currentTarget),
             task = checkbox.parents(this.config.selectors.listItem),
             id = +task.data('id'),
             checked = !!checkbox.filter(':checked').length;
-        this.model.set(id, {
+        this.setModel(id, {
             done: checked
         });
     }, this);
+};
+
+App.prototype.setModel = function(id, params){
+    console.log('^^^ set model');
+    if ( this.is_save_timer ) {
+        clearTimeout(this.save_timer);
+    }
+    this.is_save_timer = true;
+    this.model.set(params);
+    this.save_timer = setTimeout($.proxy(function(){
+        this.is_save_timer = false;
+        this.model.save({
+            success: $.proxy(function(){
+                console.log('^^^ saved');
+            }, this),
+            error:$.proxy(function(data){
+                console.error('Can\'t save model', data);
+            }, this)
+        });
+    }, this), 2000);
 };

@@ -12,7 +12,8 @@ var Config = {
         list: '.b-list',
         listItem: '.b-list-item',
         add: '.b-list-item__add',
-        checkbox: '.b-list-item__checkbox'
+        checkbox: '.b-list-item__checkbox',
+        text: '.b-list-item__text'
     },
     classes: {
     },
