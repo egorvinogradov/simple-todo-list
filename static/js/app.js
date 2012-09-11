@@ -121,5 +121,13 @@ App.prototype.sortTasks = function(data){
 
 App.prototype.bindListEvents = function(){
     this.els = this.getNodes(this.config.selectors);
-    console.log('bind list events', this.els.list);
+    this.els.checkbox._on('change', function(event){
+        var checkbox = $(event.currentTarget),
+            task = checkbox.parents(this.config.selectors.listItem),
+            id = +task.data('id'),
+            checked = !!checkbox.filter(':checked').length;
+        this.model.set(id, {
+            done: checked
+        });
+    }, this);
 };
