@@ -62,4 +62,6 @@ var mock = [
     }
 ];
 
+//localStorage.setItem('tasks', JSON.stringify(mock));
+
 var Todo = new App(Config);

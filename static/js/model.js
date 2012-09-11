@@ -83,13 +83,9 @@ Model.prototype.revert = function(){
     }
 };
 
+/*
+
 Model.prototype.fetch = function(callbacks){
-
-    this._initial = this._copy(mock);
-    this._current = this._copy(mock);
-    callbacks.success(mock);
-    return;
-
     $.ajax({
         url: this._params.url,
         complete: function(response){
@@ -110,6 +106,7 @@ Model.prototype.save = function(callbacks){
     $.ajax({
         url: this._params.url,
         type: 'POST',
+        data: this._current,
         complete: function(response){
             if ( response.status === 200 ) {
                 var data = $.parseJSON(response.responseText);
@@ -121,6 +118,21 @@ Model.prototype.save = function(callbacks){
         }
     });
 };
+
+*/
+
+Model.prototype.fetch = function(callbacks){
+    var data = localStorage.getItem('tasks');
+    this._initial = this._copy(data);
+    this._current = this._copy(data);
+    callbacks.success(data);
+};
+
+Model.prototype.save = function(callbacks){
+    localStorage.setItem('tasks', JSON.stringify(this._current));
+    callbacks.success();
+};
+
 
 Model.prototype.sync = function(){
     // navigator.onLine
