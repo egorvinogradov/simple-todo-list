@@ -141,7 +141,7 @@ App.prototype.bindListEvents = function(){
             task,
             id;
 
-        if ( element.data('text-before') !== text ) {
+        if ( element.data('before') !== text ) {
             element.data({ before: text });
             task = element.parents(this.config.selectors.listItem);
             id = +task.data('id');
@@ -159,16 +159,51 @@ App.prototype.bindListEvents = function(){
         this.setModel(id, {
             done: checked
         });
+        if ( checked ) {
+            task.addClass(this.config.classes.completed);
+            this.setModel(id, {
+                done: checked,
+                finish: new Date().toISOString()
+            });
+        }
+        else {
+            task.removeClass(this.config.classes.completed);
+            this.setModel(id, {
+                done: checked,
+                finish: null
+            });
+        }
+    }, this);
+
+    this.els.add._on('click', function(event){
+        var taskElement = $(event.currentTarget).parents(this.config.settings.listItem),
+            parentElement = taskElement.parents(this.config.settings.listItem),
+            id = +taskElement.data('id'),
+            parent = +parentElement.data('id'),
+            newTaskId = +new Date(),
+            newTaskData = {
+                id: newTaskId,
+                text: 'Задача',
+                start: new Date().toISOString(),
+                finish: null,
+                done: false,
+                parent: parent,
+                order: null
+            },
+            newTaskHtml = _.template(this.config.templates.listItem, newTaskData),
+            newTaskElement = $(newTaskHtml);
+        taskElement.after(newTaskElement);
+        this.setModel(newTaskId, newTaskData);
     }, this);
 };
 
 App.prototype.setModel = function(id, params){
-    console.log('^^^ set model');
+    console.log('^^^ set model', params);
     if ( this.is_save_timer ) {
         clearTimeout(this.save_timer);
     }
     this.is_save_timer = true;
-    this.model.set(params);
+    this.model.set(id, params);
     this.save_timer = setTimeout($.proxy(function(){
         this.is_save_timer = false;
         this.model.save({
@@ -179,5 +214,5 @@ App.prototype.setModel = function(id, params){
                 console.error('Can\'t save model', data);
             }, this)
         });
-    }, this), 2000);
+    }, this), 1000);
 };

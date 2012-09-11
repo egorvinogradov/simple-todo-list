@@ -122,7 +122,7 @@ Model.prototype.save = function(callbacks){
 */
 
 Model.prototype.fetch = function(callbacks){
-    var data = localStorage.getItem('tasks');
+    var data = JSON.parse(localStorage.getItem('tasks'));
     this._initial = this._copy(data);
     this._current = this._copy(data);
     callbacks.success(data);

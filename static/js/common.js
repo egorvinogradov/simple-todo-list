@@ -16,6 +16,7 @@ var Config = {
         text: '.b-list-item__text'
     },
     classes: {
+        completed: 'b-list-item_checked'
     },
     templates: {
         list: $('#list-template').html(),
