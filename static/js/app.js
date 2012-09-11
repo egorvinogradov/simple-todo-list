@@ -226,5 +226,8 @@ App.prototype.bindAddButtonEvents = function(els){
         taskElement.after(newTaskElement);
         this.setModel(newTaskId, newTaskData);
         this.bindEvents(newTaskElement);
+        newTaskElement
+            .find(this.config.selectors.text)
+            .focus();
     }, this);
 };
