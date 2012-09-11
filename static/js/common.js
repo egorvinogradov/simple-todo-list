@@ -64,70 +64,161 @@ var mock = [
 ];
 
 
+//Model = function(params){
+//    this.params = params;
+//    this.initial = {};
+//    this.current = {};
+//};
+//
+//Model.prototype.onChange = function(handler, context){
+//    this.__onChange = $.proxy(handler, context);
+//};
+//
+//Model.prototype.onRevert = function(handler, context){
+//    this.__onRevert = $.proxy(handler, context);
+//};
+//
+//Model.prototype.set = function(params){
+//    var changes = {};
+//    for ( var key in params ) {
+//        if ( this.current[key] !== params[key] ) {
+//            this.current[key] = params[key];
+//            changes[key] = params[key];
+//        }
+//    }
+//    if ( !_.isEmpty(changes) && this.__onChange ) {
+//        this.__onChange(changes);
+//    }
+//    if ( !_.isEmpty(changes) && this.__onRevert && _.isEqual(this.initial, this.current) ) {
+//        this.__onRevert();
+//    }
+//};
+//
+//Model.prototype.revert = function(){
+//    if ( !_.isEqual(this.initial, this.current) ) {
+//        this.current = _.clone(this.initial);
+//        if ( this.__onRevert ) {
+//            this.__onRevert();
+//        }
+//    }
+//};
+//
+//Model.prototype.get = function(key){
+//    return this.current[key];
+//};
+//
+//Model.prototype.fetch = function(callbacks){
+//
+//    // todo: replace
+//
+//    this.initial = _.clone(mock);
+//    this.current = _.clone(mock);
+//    callbacks.success(mock);
+//    return;
+//
+//    $.ajax({
+//        url: this.params.url,
+//        complete: function(response){
+//            if ( response.status === 200 ) {
+//                var data = $.parseJSON(response.responseText);
+//                this.initial = _.clone(data);
+//                this.current = _.clone(data);
+//                callbacks.success(data);
+//            }
+//            else {
+//                callbacks.error(response);
+//            }
+//        }
+//    });
+//};
+//
+//Model.prototype.save = function(callbacks){
+//    $.ajax({
+//        url: this.params.url,
+//        type: 'POST',
+//        complete: function(response){
+//            if ( response.status === 200 ) {
+//                // todo: check response
+//                callbacks.success();
+//            }
+//            else {
+//                callbacks.error(response);
+//            }
+//        }
+//    });
+//};
+
+
+
+
+
+
+
+
+
 Model = function(params){
     this.params = params;
-    this.initial = {};
-    this.current = {};
+    this.initial = [];
+    this.current = [];
 };
 
-Model.prototype.onChange = function(handler, context){
-    this.__onChange = $.proxy(handler, context);
+Model.events = {
+    change: null,
+    revert: null
 };
 
-Model.prototype.onRevert = function(handler, context){
-    this.__onRevert = $.proxy(handler, context);
+Model.prototype.on = function(event, handler, context){
+    this.events[event] = $.proxy(handler, context);
 };
 
-Model.prototype.set = function(params){
-    var changes = {};
-    for ( var key in params ) {
-        if ( this.current[key] !== params[key] ) {
-            this.current[key] = params[key];
-            changes[key] = params[key];
+Model.prototype.set = function(id, params){
+    var item = this.get(id),
+        changes = {};
+    _.each(params, function(value, key){
+        if ( item[key] !== value ) {
+            changes[key] = value;
+            item[key] = value;
+        }
+    });
+    if ( !_.isEmpty(changes) && this.events.change ) {
+        this.events.change(id, changes);
+    }
+};
+
+Model.prototype.remove = function(id){
+    var item = this.get(id);
+    if ( item ) {
+        this.current = _.reject(this.current, function(item){ return item.id === id });
+        if ( this.events.change ) {
+            this.events.change(id, null);
         }
     }
-    if ( !_.isEmpty(changes) && this.__onChange ) {
-        this.__onChange(changes);
-    }
-    if ( !_.isEmpty(changes) && this.__onRevert && _.isEqual(this.initial, this.current) ) {
-        this.__onRevert();
-    }
+};
+
+Model.prototype.get= function(id){
+    return _.find(this.current, function(item){ return item.id === id; });
 };
 
 Model.prototype.revert = function(){
-    if ( !_.isEqual(this.initial, this.current) ) {
+    if ( !_.isEqual(this.current, this.initial) ) {
         this.current = _.clone(this.initial);
-        if ( this.__onRevert ) {
-            this.__onRevert();
+        if ( this.events.revert ) {
+            this.events.revert();
         }
     }
 };
 
-Model.prototype.get = function(key){
-    return this.current[key];
-};
-
 Model.prototype.fetch = function(callbacks){
-
-    // todo: replace
-
-    this.initial = _.clone(mock);
-    this.current = _.clone(mock);
-    callbacks.success(mock);
-    return;
-
     $.ajax({
         url: this.params.url,
         complete: function(response){
             if ( response.status === 200 ) {
                 var data = $.parseJSON(response.responseText);
-                this.initial = _.clone(data);
-                this.current = _.clone(data);
-                callbacks.success(data);
+                if ( data ) {
+                    return callbacks.success(data);
+                }
             }
-            else {
-                callbacks.error(response);
-            }
+            callbacks.error(response);
         }
     });
 };
@@ -138,15 +229,20 @@ Model.prototype.save = function(callbacks){
         type: 'POST',
         complete: function(response){
             if ( response.status === 200 ) {
-                // todo: check response
-                callbacks.success();
+                var data = $.parseJSON(response.responseText);
+                if ( data.status === 'OK' ) {
+                    return callbacks.success();
+                }
             }
-            else {
-                callbacks.error(response);
-            }
+            callbacks.error(response);
         }
     });
 };
+
+Model.prototype.sync = function(){
+    // navigator.onLine
+};
+
 
 
 
@@ -155,25 +251,25 @@ App = {
         this.els = {};
         this.els.container = $(Config.selectors.container);
 
-        this.model = new Model({
-            url: Config.url
-        });
-        this.model.fetch({
-            success: $.proxy(function(){
-                this.render(this.model, this.els.container, $.proxy(this.bindListEvents, this));
-            }, this),
-            error: $.proxy(function(){
-                console.error('Can\'t fetch model');
-            }, this)
-        });
-
-        this.model.onChange(function(){
-            console.log('model on change', arguments, this);
-        }, this);
-
-        this.model.onRevert(function(){
-            console.log('model on revert', arguments, this);
-        }, this);
+//        this.model = new Model({
+//            url: Config.url
+//        });
+//        this.model.fetch({
+//            success: $.proxy(function(){
+//                this.render(this.model, this.els.container, $.proxy(this.bindListEvents, this));
+//            }, this),
+//            error: $.proxy(function(){
+//                console.error('Can\'t fetch model');
+//            }, this)
+//        });
+//
+//        this.model.onChange(function(){
+//            console.log('model on change', arguments, this);
+//        }, this);
+//
+//        this.model.onRevert(function(){
+//            console.log('model on revert', arguments, this);
+//        }, this);
 
     },
     getNodes: function(selectors){
