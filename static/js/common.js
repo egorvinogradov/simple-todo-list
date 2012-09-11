@@ -1,6 +1,9 @@
 $.fn.extend({
     _on: function(eventName, handler, context){
         this.on(eventName, $.proxy(handler, context));
+    },
+    _live: function(eventName, handler, context){
+        this.live(eventName, $.proxy(handler, context));
     }
 });
 

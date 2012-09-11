@@ -14,7 +14,7 @@ App.prototype.init = function(){
     this.model.fetch({
         success: $.proxy(function(){
             console.log('model fetch success', this.model);
-            this.render(this.model.toArray(), this.els.container, $.proxy(this.bindListEvents, this));
+            this.render(this.model.toArray(), this.els.container, $.proxy(this.bindEvents, this));
         }, this),
         error: $.proxy(function(){
             console.error('Can\'t fetch model');
@@ -119,28 +119,55 @@ App.prototype.sortTasks = function(data){
         .concat(concatenated.completed);
 };
 
-App.prototype.bindListEvents = function(){
+App.prototype.setModel = function(id, params){
+    console.log('^^^ set model', params);
+    if ( this.is_save_timer ) {
+        clearTimeout(this.save_timer);
+    }
+    this.is_save_timer = true;
+    this.model.set(id, params);
+    this.save_timer = setTimeout($.proxy(function(){
+        this.is_save_timer = false;
+        this.model.save({
+            success: $.proxy(function(){
+                console.log('^^^ saved');
+            }, this),
+            error:$.proxy(function(data){
+                console.error('Can\'t save model', data);
+            }, this)
+        });
+    }, this), 1000);
+};
 
-    this.els = this.getNodes(this.config.selectors);
+App.prototype.bindEvents = function(tasks){
+    tasks = tasks && tasks.length
+        ? tasks
+        : $(this.config.selectors.listItem);
+    tasks.each($.proxy(function(i, task){
+        this.bindTextEditingEvents( $(this.config.selectors.text, task) );
+        this.bindCheckboxEvents( $(this.config.selectors.checkbox, task) );
+        this.bindAddButtonEvents( $(this.config.selectors.add, task) );
+    }, this));
+};
 
-    this.els.text.each(function(i, element){
+App.prototype.bindTextEditingEvents = function(els){
+
+    els.each(function(i, element){
         element.contentEditable = true;
     });
 
-    this.els.text._on('focus', function(event){
+    els._on('focus', function(event){
         var element = $(event.currentTarget);
         element.data({
             before: $.trim(element.html())
         });
     }, this);
 
-    this.els.text._on('blur keyup paste', function(event){
-
+    els._on('blur keyup paste', function(event){
         var element = $(event.currentTarget),
             text = $.trim(element.html()),
             task,
             id;
-
         if ( element.data('before') !== text ) {
             element.data({ before: text });
             task = element.parents(this.config.selectors.listItem);
@@ -150,8 +177,10 @@ App.prototype.bindListEvents = function(){
             });
         }
     }, this);
+};
 
-    this.els.checkbox._on('change', function(event){
+App.prototype.bindCheckboxEvents = function(els){
+    els._on('change', function(event){
         var checkbox = $(event.currentTarget),
             task = checkbox.parents(this.config.selectors.listItem),
             id = +task.data('id'),
@@ -174,45 +203,28 @@ App.prototype.bindListEvents = function(){
             });
         }
     }, this);
+};
 
-    this.els.add._on('click', function(event){
-        var taskElement = $(event.currentTarget).parents(this.config.settings.listItem),
-            parentElement = taskElement.parents(this.config.settings.listItem),
+App.prototype.bindAddButtonEvents = function(els){
+    els._on('click', function(event){
+        var taskElement = $(event.currentTarget).parents(this.config.selectors.listItem),
+            parentElement = taskElement.parents(this.config.selectors.listItem),
             id = +taskElement.data('id'),
             parent = +parentElement.data('id'),
             newTaskId = +new Date(),
             newTaskData = {
                 id: newTaskId,
+                parent: parent,
                 text: 'Задача',
                 start: new Date().toISOString(),
                 finish: null,
-                done: false,
-                parent: parent,
-                order: null
+                order: null,
+                done: false
             },
-            newTaskHtml = _.template(this.config.templates.listItem, newTaskData),
+            newTaskHtml = _.template(this.config.templates.listItem, _.extend(newTaskData, { tasksHtml: '' })),
             newTaskElement = $(newTaskHtml);
         taskElement.after(newTaskElement);
         this.setModel(newTaskId, newTaskData);
+        this.bindEvents(newTaskElement);
     }, this);
-};
-
-App.prototype.setModel = function(id, params){
-    console.log('^^^ set model', params);
-    if ( this.is_save_timer ) {
-        clearTimeout(this.save_timer);
-    }
-    this.is_save_timer = true;
-    this.model.set(id, params);
-    this.save_timer = setTimeout($.proxy(function(){
-        this.is_save_timer = false;
-        this.model.save({
-            success: $.proxy(function(){
-                console.log('^^^ saved');
-            }, this),
-            error:$.proxy(function(data){
-                console.error('Can\'t save model', data);
-            }, this)
-        });
-    }, this), 1000);
 };

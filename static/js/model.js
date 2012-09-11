@@ -42,6 +42,10 @@ Model.prototype.on = function(event, handler, context){
 Model.prototype.set = function(id, params){
     var item = this.get(id),
         changes = {};
+    if ( !item ) {
+        item = {};
+        this._current.push(item);
+    }
     _.each(params, function(value, key){
         if ( item[key] !== value ) {
             changes[key] = value;
@@ -84,6 +88,8 @@ Model.prototype.revert = function(){
 };
 
 /*
+
+// todo: uncomment when back end will be done
 
 Model.prototype.fetch = function(callbacks){
     $.ajax({
