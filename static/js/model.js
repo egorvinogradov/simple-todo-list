@@ -24,6 +24,17 @@ Model.prototype._equals = function(arr1, arr2){
     }
 };
 
+Model.prototype._copy = function(arr){
+    var copy = [];
+    for ( var i = 0, l = arr.length; i < l; i++ ) {
+        var value = arr[i];
+        value instanceof Object
+            ? copy.push(_.clone(value))
+            : copy.push(value);
+    }
+    return copy;
+};
+
 Model.prototype.on = function(event, handler, context){
     this._events[event] = $.proxy(handler, context);
 };
@@ -60,12 +71,12 @@ Model.prototype.get= function(id){
 };
 
 Model.prototype.toArray = function(){
-    return this._current.slice();
+    return this._copy(this._current);
 };
 
 Model.prototype.revert = function(){
     if ( !this._equals(this._current, this._initial) ) {
-        this._current = this._initial.slice();
+        this._current = this._copy(this._initial);
         if ( this._events.revert ) {
             this._events.revert();
         }
@@ -74,8 +85,8 @@ Model.prototype.revert = function(){
 
 Model.prototype.fetch = function(callbacks){
 
-    this._initial = mock.slice();
-    this._current = mock.slice();
+    this._initial = this._copy(mock);
+    this._current = this._copy(mock);
     callbacks.success(mock);
     return;
 
@@ -85,8 +96,8 @@ Model.prototype.fetch = function(callbacks){
             if ( response.status === 200 ) {
                 var data = $.parseJSON(response.responseText);
                 if ( data ) {
-                    this._initial = data.slice();
-                    this._current = data.slice();
+                    this._initial = this._copy(data);
+                    this._current = this._copy(data);
                     return callbacks.success(data);
                 }
             }
