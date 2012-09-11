@@ -123,6 +123,10 @@ Model.prototype.get= function(id){
     return _.find(this._current, function(item){ return item.id === id; });
 };
 
+Model.prototype.toArray = function(){
+    return this._current.slice();
+};
+
 Model.prototype.revert = function(){
     if ( !this._equals(this._current, this._initial) ) {
         this._current = this._initial.slice();
@@ -173,6 +177,7 @@ Model.prototype.save = function(callbacks){
 
 Model.prototype.sync = function(){
     // navigator.onLine
+    // todo: sync when offline
 };
 
 
@@ -188,7 +193,8 @@ App = {
         });
         this.model.fetch({
             success: $.proxy(function(){
-                this.render(this.model, this.els.container, $.proxy(this.bindListEvents, this));
+                console.log('model fetch success', this.model);
+                this.render(this.model.toArray(), this.els.container, $.proxy(this.bindListEvents, this));
             }, this),
             error: $.proxy(function(){
                 console.error('Can\'t fetch model');

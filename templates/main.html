@@ -16,12 +16,12 @@
     <ul class="b-list"><%= tasksHtml %></ul>
 </script>
 <script type="application/template" id="list-item-template">
-    <li class="b-list-item<% if ( done ) { %>b-list-item_checked<% } %>" data-start="<%= start %>" data-finish="<%= finish %>" data-id="<%= id %>" data-order="<%= order %>">
+    <li class="b-list-item<% if ( done ) { %> b-list-item_checked<% } %>" data-start="<%= start %>" data-finish="<%= finish %>" data-id="<%= id %>" data-order="<%= order %>">
         <span class="b-list-item__wrapper">
             <input class="b-list-item__checkbox" type="checkbox" <% if ( done ) { %>checked<% } %>>
             <span class="b-list-item__text"><%= text %></span>
         </span>
-        <span class="b-list-item__add">+ задача</span>
+        <button class="b-list-item__add">+ задача</button>
         <%= tasksHtml %>
     </li>
 </script>
