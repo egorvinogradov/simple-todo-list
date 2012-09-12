@@ -19,8 +19,6 @@ var Config = {
         wrapper: '.b-list-item__wrapper'
     },
     classes: {
-//        completed: 'b-list-item_checked',
-//        hover: 'b-list-item_hover'
         selected: 'b-list-item_selected'
     },
     templates: {

@@ -239,8 +239,10 @@ App.prototype.bindAddButtonEvents = function(els){
 };
 
 App.prototype.bindKeyEvents = function(){
-    $(window)._on('keydown', function(event){
 
+    var _window = $(window);
+
+    _window._on('keydown', function(event){
         if ( event.shiftKey && event.which === 38 ) { // add row above to selection
             this.moveSelection({
                 up: true,
@@ -263,6 +265,12 @@ App.prototype.bindKeyEvents = function(){
                 down: true
             });
         }
+    }, this);
+
+    _window._on('click', function(){
+        this.getSelectedTasks()
+            .find(this.config.selectors.wrapper)
+            .removeClass(this.config.classes.selected);
     }, this);
 };
 
@@ -308,7 +316,7 @@ App.prototype.moveSelection = function(params){
         : tasks.filter( params.up ? ':last' : ':first' );
     next
         .children(this.config.selectors.wrapper)
-        .addClass(this.config.classes.selected);
+        .toggleClass(this.config.classes.selected);
 
     console.log('move selection ' + ( params.up ? 'up' : 'down' ) + ( params.multiple ? ', multiple' : '' ), current);
 };
