@@ -139,42 +139,6 @@ App.prototype.setModel = function(id, params){
     }, this), 1000);
 };
 
-App.prototype.getTaskGlobalIndex = function(task){
-    var siblingTasks = $(this.config.selectors.listItem, task.parent());
-    for ( var i = 0, l = siblingTasks.length; i < l; i++ ) {
-        var currentTask = siblingTasks.eq(i);
-        if ( currentTask.is(task) ) {
-            return i;
-        }
-    }
-};
-
-//App.prototype.getSelectedTasks = function(){
-//    return $(this.config.selectors.wrapper)
-//        .filter('.' + this.config.classes.selected)
-//        .last()
-//        .parent();
-//};
-
-App.prototype.getSiblingTasks = function(task){
-    var parent = task && task.parent().length
-        ? task.parent()
-        : document;
-    return $(this.config.selectors.listItem, parent);
-};
-
-App.prototype.getNextTask = function(task){
-    var siblingTasks = this.getSiblingTasks(task),
-        currentIndex = this.getTaskGlobalIndex(task);
-    return siblingTasks.eq( currentIndex + 1 );
-};
-
-App.prototype.getPreviousTask = function(task){
-    var siblingTasks = this.getSiblingTasks(task),
-        currentIndex = this.getTaskGlobalIndex(task);
-    return siblingTasks.eq( currentIndex - 1 );
-};
-
 App.prototype.bindEvents = function(tasks){
     tasks = tasks && tasks.length
         ? tasks
@@ -184,7 +148,6 @@ App.prototype.bindEvents = function(tasks){
         .first()
         .addClass(this.config.classes.selected);
     tasks.each($.proxy(function(i, task){
-        //this.bindListItemEvents( $(this.config.selectors.wrapper, task) );
         this.bindTextEditingEvents( $(this.config.selectors.text, task) );
         this.bindCheckboxEvents( $(this.config.selectors.checkbox, task) );
         this.bindAddButtonEvents( $(this.config.selectors.add, task) );
@@ -192,19 +155,103 @@ App.prototype.bindEvents = function(tasks){
     this.bindKeyEvents();
 };
 
+App.prototype.bindTextEditingEvents = function(els){
+
+    els.each(function(i, element){
+        element.contentEditable = true;
+    });
+
+    els._on('focus', function(event){
+        var element = $(event.currentTarget);
+        element.data({
+            before: $.trim(element.html())
+        });
+    }, this);
+
+    els._on('blur keyup paste', function(event){
+        var element = $(event.currentTarget),
+            text = $.trim(element.html()),
+            task,
+            id;
+        if ( element.data('before') !== text ) {
+            element.data({ before: text });
+            task = element.parents(this.config.selectors.listItem);
+            id = +task.data('id');
+            this.setModel(id, {
+                text: text
+            });
+        }
+    }, this);
+};
+
+App.prototype.bindCheckboxEvents = function(els){
+    els._on('change', function(event){
+        var checkbox = $(event.currentTarget),
+            task = checkbox.parents(this.config.selectors.listItem),
+            id = +task.data('id'),
+            checked = !!checkbox.filter(':checked').length;
+        if ( checked ) {
+            this.setModel(id, {
+                done: checked,
+                finish: new Date().toISOString()
+            });
+        }
+        else {
+            this.setModel(id, {
+                done: checked,
+                finish: null
+            });
+        }
+    }, this);
+};
+
+App.prototype.bindAddButtonEvents = function(els){
+
+    els._on('click', function(event){
+        var els = {},
+            data = {},
+            newTask = {};
+
+        els.task = $(event.currentTarget).parents(this.config.selectors.listItem);
+        els.parent = els.task.parents(this.config.selectors.listItem);
+        data.id = +els.task.data('id');
+        data.parent = +els.parent.data('id') || 0;
+        newTask.id = +new Date();
+        newTask.data = {
+            id: newTask.id,
+            parent: data.parent,
+            text: this.config.newTaskText,
+            start: new Date(newTask.id).toISOString(),
+            finish: null,
+            order: null,
+            done: false
+        };
+        newTask.html = _.template(this.config.templates.listItem, _.extend(newTask.data, { tasksHtml: '' }));
+        newTask.element = $(newTask.html);
+
+        els.task.after(newTask.element);
+        this.setModel(newTask.id, newTask.data);
+        this.bindEvents(newTask.element);
+        newTask.element
+            .find(this.config.selectors.text)
+            .focus();
+    }, this);
+};
+
 App.prototype.bindKeyEvents = function(){
+
     console.log('bind key events');
 
     $(window)._on('keydown', function(event){
 
-        var allTasks = this.getSiblingTasks(),
-            allTasksFirst = allTasks.first(),
-            allTasksLast = allTasks.last(),
-            currentSelection = this.getSelectedTasks(),
-            currentSelectionFirst = currentSelection.first(),
-            currentSelectionLast = currentSelection.last(),
-            nextTask = this.getNextTask(currentSelectionLast),
-            previousTask = this.getPreviousTask(currentSelectionLast);
+//        var allTasks = this.getSiblingTasks(),
+//            allTasksFirst = allTasks.first(),
+//            allTasksLast = allTasks.last(),
+//            currentSelection = this.getSelectedTasks(),
+//            currentSelectionFirst = currentSelection.first(),
+//            currentSelectionLast = currentSelection.last(),
+//            nextTask = this.getNextTask(currentSelectionLast),
+//            previousTask = this.getPreviousTask(currentSelectionLast);
 
 //        console.log(
 //            'key down',
@@ -257,33 +304,6 @@ App.prototype.getTaskIndex = function(task){
     }
 };
 
-//App.prototype.moveSelectionDown = function(){
-//    var tasks = this.getTaskElements(),
-//        selection = this.getSelectedTasks(),
-//        current = this.getTaskIndex( selection.last() ),
-//        next = tasks.eq( current + 1 );
-//    next = next.length
-//        ? next
-//        : tasks.first();
-//    selection.children(this.config.selectors.wrapper).removeClass(this.config.classes.selected);
-//    next.children(this.config.selectors.wrapper).addClass(this.config.classes.selected);
-//    //console.log('\n\n move selection down \n\n', selection, '\n\n', tasks, '\n\n', current, '\n\n', next);
-//};
-//
-//App.prototype.moveSelectionUp = function(){
-//    var tasks = this.getTaskElements(),
-//        selection = this.getSelectedTasks(),
-//        current = this.getTaskIndex( selection.last() ),
-//        prev = tasks.eq( current + 1 );
-//    prev = prev.length
-//        ? prev
-//        : tasks.last();
-//    selection.children(this.config.selectors.wrapper).removeClass(this.config.classes.selected);
-//    prev.children(this.config.selectors.wrapper).addClass(this.config.classes.selected);
-//    console.log('\n\n move selection down \n\n', selection, '\n\n', tasks, '\n\n', current, '\n\n', next);
-//};
-
-
 App.prototype.moveSelection = function(params){
     var tasks = this.getTaskElements(),
         selection = this.getSelectedTasks(),
@@ -296,108 +316,4 @@ App.prototype.moveSelection = function(params){
     next.children(this.config.selectors.wrapper).addClass(this.config.classes.selected);
     console.log('move selection ' + params.up ? 'up' : 'down', current);
     //console.log('\n\n move selection ' + params.up ? 'up' : 'down' + ' \n\n', selection, '\n\n', tasks, '\n\n', current, '\n\n', next);
-};
-
-
-
-//App.prototype.bindListItemEvents = function(els){
-//
-//    var allTasks = $(this.config.selectors.wrapper);
-//
-//    els._on('mouseover', function(event){
-//        var currentTask = $(event.currentTarget);
-//        $(event.currentTarget).addClass(this.config.classes.selected);
-//        allTasks.not(currentTask).removeClass()
-//        event.stopPropagation();
-//    }, this);
-//    els._on('mouseout', function(event){
-//        $(event.currentTarget).removeClass(this.config.classes.selected);
-//        event.stopPropagation();
-//    }, this);
-//};
-
-App.prototype.bindTextEditingEvents = function(els){
-
-    els.each(function(i, element){
-        element.contentEditable = true;
-    });
-
-    els._on('focus', function(event){
-        var element = $(event.currentTarget);
-        element.data({
-            before: $.trim(element.html())
-        });
-    }, this);
-
-    els._on('blur keyup paste', function(event){
-        var element = $(event.currentTarget),
-            text = $.trim(element.html()),
-            task,
-            id;
-        if ( element.data('before') !== text ) {
-            element.data({ before: text });
-            task = element.parents(this.config.selectors.listItem);
-            id = +task.data('id');
-            this.setModel(id, {
-                text: text
-            });
-        }
-    }, this);
-};
-
-App.prototype.bindCheckboxEvents = function(els){
-    els._on('change', function(event){
-        var checkbox = $(event.currentTarget),
-            task = checkbox.parents(this.config.selectors.listItem),
-            id = +task.data('id'),
-            checked = !!checkbox.filter(':checked').length;
-        if ( checked ) {
-            //task.addClass(this.config.classes.completed);
-            this.setModel(id, {
-                done: checked,
-                finish: new Date().toISOString()
-            });
-        }
-        else {
-            //task.removeClass(this.config.classes.completed);
-            this.setModel(id, {
-                done: checked,
-                finish: null
-            });
-        }
-    }, this);
-};
-
-App.prototype.bindAddButtonEvents = function(els){
-
-    els._on('click', function(event){
-
-        var els = {},
-            data = {},
-            newTask = {};
-
-        els.task = $(event.currentTarget).parents(this.config.selectors.listItem);
-        els.parent = els.task.parents(this.config.selectors.listItem);
-        data.id = +els.task.data('id');
-        data.parent = +els.parent.data('id') || 0;
-        newTask.id = +new Date();
-        newTask.data = {
-            id: newTask.id,
-            parent: data.parent,
-            text: this.config.newTaskText,
-            start: new Date(newTask.id).toISOString(),
-            finish: null,
-            order: null,
-            done: false
-        };
-        newTask.html = _.template(this.config.templates.listItem, _.extend(newTask.data, { tasksHtml: '' }));
-        newTask.element = $(newTask.html);
-
-        els.task.after(newTask.element);
-        this.setModel(newTask.id, newTask.data);
-        this.bindEvents(newTask.element);
-        newTask.element
-            .find(this.config.selectors.text)
-            .focus();
-    }, this);
 };
