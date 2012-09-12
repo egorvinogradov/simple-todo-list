@@ -239,47 +239,31 @@ App.prototype.bindAddButtonEvents = function(els){
 };
 
 App.prototype.bindKeyEvents = function(){
-
-    console.log('bind key events');
-
     $(window)._on('keydown', function(event){
 
-//        var allTasks = this.getSiblingTasks(),
-//            allTasksFirst = allTasks.first(),
-//            allTasksLast = allTasks.last(),
-//            currentSelection = this.getSelectedTasks(),
-//            currentSelectionFirst = currentSelection.first(),
-//            currentSelectionLast = currentSelection.last(),
-//            nextTask = this.getNextTask(currentSelectionLast),
-//            previousTask = this.getPreviousTask(currentSelectionLast);
-
-//        console.log(
-//            'key down',
-//            event.currentTarget,
-//            event.target,
-//            event.which,
-//            event
-//        );
-
-        window._e = event;
-
-        if ( event.shiftKey && event.which === 38 ) {
-            // select up
+        if ( event.shiftKey && event.which === 38 ) { // add row above to selection
+            this.moveSelection({
+                up: true,
+                multiple: true
+            });
         }
-
-        if ( event.shiftKey && event.which === 40 ) {
-            // select down
+        if ( event.shiftKey && event.which === 40 ) { // add row below to selection
+            this.moveSelection({
+                down: true,
+                multiple: true
+            });
         }
         if ( !event.shiftKey && event.which === 38 ) { // move selection up
-            this.moveSelection({ up: true });
+            this.moveSelection({
+                up: true
+            });
         }
         if ( !event.shiftKey && event.which === 40 ) { // move selection down
-            this.moveSelection({ down: true });
+            this.moveSelection({
+                down: true
+            });
         }
-
     }, this);
-
-
 };
 
 App.prototype.getTaskElements = function(sibling){
@@ -305,15 +289,26 @@ App.prototype.getTaskIndex = function(task){
 };
 
 App.prototype.moveSelection = function(params){
+
     var tasks = this.getTaskElements(),
         selection = this.getSelectedTasks(),
         current = this.getTaskIndex( selection.last() ),
         next = tasks.eq( params.up ? current - 1 : current + 1 );
+
+    if ( params.multiple && !next.length ) {
+        return;
+    }
+    if ( !params.multiple ) {
+        selection
+            .children(this.config.selectors.wrapper)
+            .removeClass(this.config.classes.selected);
+    }
     next = next.length
         ? next
         : tasks.filter( params.up ? ':last' : ':first' );
-    selection.children(this.config.selectors.wrapper).removeClass(this.config.classes.selected);
-    next.children(this.config.selectors.wrapper).addClass(this.config.classes.selected);
-    console.log('move selection ' + params.up ? 'up' : 'down', current);
-    //console.log('\n\n move selection ' + params.up ? 'up' : 'down' + ' \n\n', selection, '\n\n', tasks, '\n\n', current, '\n\n', next);
+    next
+        .children(this.config.selectors.wrapper)
+        .addClass(this.config.classes.selected);
+
+    console.log('move selection ' + ( params.up ? 'up' : 'down' ) + ( params.multiple ? ', multiple' : '' ), current);
 };
