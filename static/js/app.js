@@ -144,11 +144,25 @@ App.prototype.bindEvents = function(tasks){
         ? tasks
         : $(this.config.selectors.listItem);
     tasks.each($.proxy(function(i, task){
+
+        //this.bindListItemEvents(tasks);
+
         this.bindTextEditingEvents( $(this.config.selectors.text, task) );
         this.bindCheckboxEvents( $(this.config.selectors.checkbox, task) );
         this.bindAddButtonEvents( $(this.config.selectors.add, task) );
     }, this));
 };
+
+//App.prototype.bindListItemEvents = function(els){
+//    els._on('mouseover', function(event){
+//        $(event.currentTarget).addClass(this.config.classes.hover);
+//        event.stopPropagation();
+//    }, this);
+//    els._on('mouseout', function(event){
+//        $(event.currentTarget).removeClass(this.config.classes.hover);
+//        event.stopPropagation();
+//    }, this);
+//};
 
 App.prototype.bindTextEditingEvents = function(els){
 
@@ -185,18 +199,15 @@ App.prototype.bindCheckboxEvents = function(els){
             task = checkbox.parents(this.config.selectors.listItem),
             id = +task.data('id'),
             checked = !!checkbox.filter(':checked').length;
-        this.setModel(id, {
-            done: checked
-        });
         if ( checked ) {
-            task.addClass(this.config.classes.completed);
+            //task.addClass(this.config.classes.completed);
             this.setModel(id, {
                 done: checked,
                 finish: new Date().toISOString()
             });
         }
         else {
-            task.removeClass(this.config.classes.completed);
+            //task.removeClass(this.config.classes.completed);
             this.setModel(id, {
                 done: checked,
                 finish: null
@@ -206,27 +217,34 @@ App.prototype.bindCheckboxEvents = function(els){
 };
 
 App.prototype.bindAddButtonEvents = function(els){
+
     els._on('click', function(event){
-        var taskElement = $(event.currentTarget).parents(this.config.selectors.listItem),
-            parentElement = taskElement.parents(this.config.selectors.listItem),
-            id = +taskElement.data('id'),
-            parent = +parentElement.data('id'),
-            newTaskId = +new Date(),
-            newTaskData = {
-                id: newTaskId,
-                parent: parent,
-                text: 'Задача',
-                start: new Date().toISOString(),
-                finish: null,
-                order: null,
-                done: false
-            },
-            newTaskHtml = _.template(this.config.templates.listItem, _.extend(newTaskData, { tasksHtml: '' })),
-            newTaskElement = $(newTaskHtml);
-        taskElement.after(newTaskElement);
-        this.setModel(newTaskId, newTaskData);
-        this.bindEvents(newTaskElement);
-        newTaskElement
+
+        var els = {},
+            data = {},
+            newTask = {};
+
+        els.task = $(event.currentTarget).parents(this.config.selectors.listItem);
+        els.parent = els.task.parents(this.config.selectors.listItem);
+        data.id = +els.task.data('id');
+        data.parent = +els.parent.data('id') || 0;
+        newTask.id = +new Date();
+        newTask.data = {
+            id: newTask.id,
+            parent: data.parent,
+            text: this.config.newTaskText,
+            start: new Date(newTask.id).toISOString(),
+            finish: null,
+            order: null,
+            done: false
+        };
+        newTask.html = _.template(this.config.templates.listItem, _.extend(newTask.data, { tasksHtml: '' }));
+        newTask.element = $(newTask.html);
+
+        els.task.after(newTask.element);
+        this.setModel(newTask.id, newTask.data);
+        this.bindEvents(newTask.element);
+        newTask.element
             .find(this.config.selectors.text)
             .focus();
     }, this);

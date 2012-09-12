@@ -1,4 +1,4 @@
-html, body, ul, li, h1, button {
+html, body, ul, li, h1, button, input {
     padding: 0;
     margin: 0;
 }
@@ -15,13 +15,16 @@ button {
 .b-main {
     padding: 20px;
     margin: 0;
-    font: 13px/18px Arial, sans-serif;
+    font: 14px/18px monospace;
+    background: #2E3436;
+    color: #F0F0F0;
 }
 
 .b-header {
-    font-size: 17px;
+    font-size: 15px;
     font-weight: normal;
     margin-bottom: 20px;
+    color: #EDCD06;
 }
 
 .b-list {
@@ -32,18 +35,11 @@ button {
 }
 
 .b-list-item {
-    float: left;
-    overflow: hidden;
-    clear: both;
-}
 
-.b-list-item_checked {
-    font-size: 11px;
-    color: #888;
 }
 
 .b-list-item__wrapper {
-    float: left;
+    display: block;
     line-height: 24px;
     height: 24px;
     padding-right: 70px;
@@ -51,60 +47,92 @@ button {
 
 .b-list-item__checkbox {
     position: relative;
-    bottom: -2px;
+    display: inline-block;
+    vertical-align: baseline;
+    margin: 0 -3px 0 5px;
 }
 
 .b-list-item__text {
     display: inline-block;
+    vertical-align: baseline;
     height: 22px;
-    padding: 1px 5px;
-}
-
-.b-list-item__text:hover {
-
+    padding: 1px 6px;
 }
 
 .b-list-item__text:active,
 .b-list-item__text:focus {
     outline: none;
-    border: 1px solid rgba(0,0,0,.3);
-    border-top-color: rgba(0,0,0,.6);
-    box-shadow: inset 0 1px 2px rgba(0,0,0,.2);
-    padding: 0 4px;
+    border: 1px solid rgba(255,255,255,.45);
+    border-radius: 2px;
+    box-shadow: 0 0 2px 1px rgba(255,255,255,.2);
+    padding: 0 5px;
 }
 
 .b-list-item__add {
-    display: none;
-    float: left;
-    height: 20px;
+    display: inline-block;
+    visibility: hidden;
     padding: 0 7px;
     border-radius: 4px;
     line-height: 20px;
+    height: 20px;
+    overflow: hidden;
     text-align: center;
-    font-size: 11px;
-    text-shadow: 0 1px 0 rgba(255,255,255,.5);
+    font-size: 12px;
+    position: relative;
+    top: -1px;
     cursor: pointer;
-    vertical-align: middle;
-    background: rgba(0,0,0,.1);
-    color: rgba(0,0,0,.5);
-    margin: 2px 0 0 -50px;
+    vertical-align: baseline;
+    background: rgba(255,255,255,.2);
+    color: #fff;
     white-space: nowrap;
-    -webkit-transition: all 0.15s;
-       -moz-transition: all 0.15s;
-            transition: all 0.15s;
+    -webkit-transition: background 0.15s;
+       -moz-transition: background 0.15s;
+            transition: background 0.15s;
+}
+
+.b-list-item__wrapper:hover {
+    background: #232729;
+}
+
+.b-list-item__wrapper:hover .b-list-item__add {
+    visibility: visible;
 }
 
 .b-list-item__add:active {
-    box-shadow: inset 0 1px 2px rgba(0,0,0,.4);
-    background: rgba(0,0,0,.2);
-    color: rgba(0,0,0,.6);
+    background: rgba(255,255,255,.4);
+    color: #fff;
 }
 
-.b-list-item__add:hover,
-.b-list-item__wrapper:hover + .b-list-item__add {
-    display: block;
+.b-list-item__checkbox:checked + .b-list-item__text {
+    color: rgba(255,255,255,.4);
+    text-decoration: line-through;
 }
 
-.b-list-item_checked .b-list-item__add {
-    display: none !important;
+.b-list-item__checkbox:checked + .b-list-item__text + .b-list-item__add {
+    visibility: hidden;
 }
+
+
+
+
+
+
+/*.b-list-item_checked {*/
+    /*font-size: 11px;*/
+    /*color: #888;*/
+/*}*/
+
+/*.b-list-item__add:hover,*/
+/*.b-list-item__wrapper:hover + .b-list-item__add {*/
+    /*display: block;*/
+/*}*/
+
+/*.b-list-item_hover > .b-list-item__add {*/
+    /*display: block;*/
+/*}*/
+
+/*.b-list-item_checked .b-list-item__add {*/
+    /*display: none !important;*/
+/*}*/
+
+

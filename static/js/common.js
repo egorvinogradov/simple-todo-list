@@ -8,7 +8,6 @@ $.fn.extend({
 });
 
 var Config = {
-    url: '/api/tasks/',
     selectors: {
         body: '.b-main',
         container: '.b-tasks',
@@ -19,12 +18,15 @@ var Config = {
         text: '.b-list-item__text'
     },
     classes: {
-        completed: 'b-list-item_checked'
+        completed: 'b-list-item_checked',
+        hover: 'b-list-item_hover'
     },
     templates: {
         list: $('#list-template').html(),
         listItem: $('#list-item-template').html()
-    }
+    },
+    url: '/api/tasks/',
+    newTaskText: 'Новая задача'
 };
 
 var mock = [
