@@ -139,27 +139,162 @@ App.prototype.setModel = function(id, params){
     }, this), 1000);
 };
 
+App.prototype.getTaskGlobalIndex = function(task){
+    var siblingTasks = $(this.config.selectors.listItem, task.parent());
+    for ( var i = 0, l = siblingTasks.length; i < l; i++ ) {
+        var currentTask = siblingTasks.eq(i);
+        if ( currentTask.is(task) ) {
+            return i;
+        }
+    }
+};
+
+//App.prototype.getSelectedTasks = function(){
+//    return $(this.config.selectors.wrapper)
+//        .filter('.' + this.config.classes.selected)
+//        .last()
+//        .parent();
+//};
+
+App.prototype.getSiblingTasks = function(task){
+    var parent = task && task.parent().length
+        ? task.parent()
+        : document;
+    return $(this.config.selectors.listItem, parent);
+};
+
+App.prototype.getNextTask = function(task){
+    var siblingTasks = this.getSiblingTasks(task),
+        currentIndex = this.getTaskGlobalIndex(task);
+    return siblingTasks.eq( currentIndex + 1 );
+};
+
+App.prototype.getPreviousTask = function(task){
+    var siblingTasks = this.getSiblingTasks(task),
+        currentIndex = this.getTaskGlobalIndex(task);
+    return siblingTasks.eq( currentIndex - 1 );
+};
+
 App.prototype.bindEvents = function(tasks){
     tasks = tasks && tasks.length
         ? tasks
         : $(this.config.selectors.listItem);
+    tasks.eq(0)
+        .find(this.config.selectors.wrapper)
+        .first()
+        .addClass(this.config.classes.selected);
     tasks.each($.proxy(function(i, task){
-
-        //this.bindListItemEvents(tasks);
-
+        //this.bindListItemEvents( $(this.config.selectors.wrapper, task) );
         this.bindTextEditingEvents( $(this.config.selectors.text, task) );
         this.bindCheckboxEvents( $(this.config.selectors.checkbox, task) );
         this.bindAddButtonEvents( $(this.config.selectors.add, task) );
     }, this));
+    this.bindKeyEvents();
+};
+
+App.prototype.bindKeyEvents = function(){
+    console.log('bind key events');
+
+    $(window)._on('keyup', function(event){
+
+        var allTasks = this.getSiblingTasks(),
+            allTasksFirst = allTasks.first(),
+            allTasksLast = allTasks.last(),
+            currentSelection = this.getSelectedTasks(),
+            currentSelectionFirst = currentSelection.first(),
+            currentSelectionLast = currentSelection.last(),
+            nextTask = this.getNextTask(currentSelectionLast),
+            previousTask = this.getPreviousTask(currentSelectionLast);
+
+//        console.log(
+//            'key down',
+//            event.currentTarget,
+//            event.target,
+//            event.which,
+//            event
+//        );
+
+        window._e = event;
+
+        if ( event.shiftKey && event.which === 38 ) {
+            // select up
+        }
+
+        if ( event.shiftKey && event.which === 40 ) {
+            // select down
+        }
+
+        if ( !event.shiftKey && event.which === 38 ) { // move selection up
+            console.log('move selection up');
+//            var next = nextTask.length
+//                ? nextTask
+//                : allTasksFirst;
+//            currentSelection.removeClass(this.config.classes.selected);
+//            next.addClass(this.config.classes.selected);
+        }
+
+        if ( !event.shiftKey && event.which === 40 ) { // move selection down
+
+            this.moveSelectionDown();
+//            var prev = previousTask.length
+//                ? previousTask
+//                : allTasksFirst;
+//            currentSelection.removeClass(this.config.classes.selected);
+//            prev.addClass(this.config.classes.selected);
+        }
+
+    }, this);
+
+
+};
+
+App.prototype.getTaskElements = function(sibling){
+    var parent = sibling && sibling.parent().length
+        ? sibling.parent()
+        : document;
+    return $(this.config.selectors.listItem, parent);
+};
+
+App.prototype.getSelectedTasks = function(){
+    return $(this.config.selectors.wrapper)
+        .filter('.' + this.config.classes.selected)
+        .parent();
+};
+
+App.prototype.getTaskIndex = function(task){
+    var tasks = this.getTaskElements();
+    for ( var i = 0, l = tasks.length; i < l; i++ ) {
+        if ( tasks.eq(i).is(task) ) {
+            return i;
+        }
+    }
+};
+
+App.prototype.moveSelectionDown = function(){
+    var tasks = this.getTaskElements(),
+        selection = this.getSelectedTasks(),
+        current = this.getTaskIndex( selection.last() ),
+        next = tasks.eq( current + 1 );
+    next = next.length
+        ? next
+        : tasks.first();
+    selection.find(this.config.selectors.wrapper).removeClass(this.config.classes.selected);
+    next.find(this.config.selectors.wrapper).addClass(this.config.classes.selected);
+    //console.log('\n\n move selection down \n\n', selection, '\n\n', tasks, '\n\n', current, '\n\n', next);
 };
 
 //App.prototype.bindListItemEvents = function(els){
+//
+//    var allTasks = $(this.config.selectors.wrapper);
+//
 //    els._on('mouseover', function(event){
-//        $(event.currentTarget).addClass(this.config.classes.hover);
+//        var currentTask = $(event.currentTarget);
+//        $(event.currentTarget).addClass(this.config.classes.selected);
+//        allTasks.not(currentTask).removeClass()
 //        event.stopPropagation();
 //    }, this);
 //    els._on('mouseout', function(event){
-//        $(event.currentTarget).removeClass(this.config.classes.hover);
+//        $(event.currentTarget).removeClass(this.config.classes.selected);
 //        event.stopPropagation();
 //    }, this);
 //};

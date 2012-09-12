@@ -90,11 +90,16 @@ button {
             transition: background 0.15s;
 }
 
+.b-list-item_selected,
 .b-list-item__wrapper:hover {
     background: #232729;
 }
 
 .b-list-item__wrapper:hover .b-list-item__add {
+    visibility: visible;
+}
+
+.b-list-item__text:hover + .b-list-item__add {
     visibility: visible;
 }
 

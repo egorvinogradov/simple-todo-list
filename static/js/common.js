@@ -15,11 +15,13 @@ var Config = {
         listItem: '.b-list-item',
         add: '.b-list-item__add',
         checkbox: '.b-list-item__checkbox',
-        text: '.b-list-item__text'
+        text: '.b-list-item__text',
+        wrapper: '.b-list-item__wrapper'
     },
     classes: {
-        completed: 'b-list-item_checked',
-        hover: 'b-list-item_hover'
+//        completed: 'b-list-item_checked',
+//        hover: 'b-list-item_hover'
+        selected: 'b-list-item_selected'
     },
     templates: {
         list: $('#list-template').html(),
