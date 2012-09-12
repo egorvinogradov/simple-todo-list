@@ -195,7 +195,7 @@ App.prototype.bindEvents = function(tasks){
 App.prototype.bindKeyEvents = function(){
     console.log('bind key events');
 
-    $(window)._on('keyup', function(event){
+    $(window)._on('keydown', function(event){
 
         var allTasks = this.getSiblingTasks(),
             allTasksFirst = allTasks.first(),
@@ -223,24 +223,11 @@ App.prototype.bindKeyEvents = function(){
         if ( event.shiftKey && event.which === 40 ) {
             // select down
         }
-
         if ( !event.shiftKey && event.which === 38 ) { // move selection up
-            console.log('move selection up');
-//            var next = nextTask.length
-//                ? nextTask
-//                : allTasksFirst;
-//            currentSelection.removeClass(this.config.classes.selected);
-//            next.addClass(this.config.classes.selected);
+            this.moveSelection({ up: true });
         }
-
         if ( !event.shiftKey && event.which === 40 ) { // move selection down
-
-            this.moveSelectionDown();
-//            var prev = previousTask.length
-//                ? previousTask
-//                : allTasksFirst;
-//            currentSelection.removeClass(this.config.classes.selected);
-//            prev.addClass(this.config.classes.selected);
+            this.moveSelection({ down: true });
         }
 
     }, this);
@@ -270,18 +257,48 @@ App.prototype.getTaskIndex = function(task){
     }
 };
 
-App.prototype.moveSelectionDown = function(){
+//App.prototype.moveSelectionDown = function(){
+//    var tasks = this.getTaskElements(),
+//        selection = this.getSelectedTasks(),
+//        current = this.getTaskIndex( selection.last() ),
+//        next = tasks.eq( current + 1 );
+//    next = next.length
+//        ? next
+//        : tasks.first();
+//    selection.children(this.config.selectors.wrapper).removeClass(this.config.classes.selected);
+//    next.children(this.config.selectors.wrapper).addClass(this.config.classes.selected);
+//    //console.log('\n\n move selection down \n\n', selection, '\n\n', tasks, '\n\n', current, '\n\n', next);
+//};
+//
+//App.prototype.moveSelectionUp = function(){
+//    var tasks = this.getTaskElements(),
+//        selection = this.getSelectedTasks(),
+//        current = this.getTaskIndex( selection.last() ),
+//        prev = tasks.eq( current + 1 );
+//    prev = prev.length
+//        ? prev
+//        : tasks.last();
+//    selection.children(this.config.selectors.wrapper).removeClass(this.config.classes.selected);
+//    prev.children(this.config.selectors.wrapper).addClass(this.config.classes.selected);
+//    console.log('\n\n move selection down \n\n', selection, '\n\n', tasks, '\n\n', current, '\n\n', next);
+//};
+
+
+App.prototype.moveSelection = function(params){
     var tasks = this.getTaskElements(),
         selection = this.getSelectedTasks(),
         current = this.getTaskIndex( selection.last() ),
-        next = tasks.eq( current + 1 );
+        next = tasks.eq( params.up ? current - 1 : current + 1 );
     next = next.length
         ? next
-        : tasks.first();
-    selection.find(this.config.selectors.wrapper).removeClass(this.config.classes.selected);
-    next.find(this.config.selectors.wrapper).addClass(this.config.classes.selected);
-    //console.log('\n\n move selection down \n\n', selection, '\n\n', tasks, '\n\n', current, '\n\n', next);
+        : tasks.filter( params.up ? ':last' : ':first' );
+    selection.children(this.config.selectors.wrapper).removeClass(this.config.classes.selected);
+    next.children(this.config.selectors.wrapper).addClass(this.config.classes.selected);
+    console.log('move selection ' + params.up ? 'up' : 'down', current);
+    //console.log('\n\n move selection ' + params.up ? 'up' : 'down' + ' \n\n', selection, '\n\n', tasks, '\n\n', current, '\n\n', next);
 };
+
+
 
 //App.prototype.bindListItemEvents = function(els){
 //
