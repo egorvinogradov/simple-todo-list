@@ -329,16 +329,13 @@ App.prototype.bindTextEditingEvents = function(tasks){
 
     var els = tasks.find(this.config.selectors.text);
 
-    els.each(function(i, element){
-        element.contentEditable = true;
-    });
-
     els._on('focus', function(event){
         var element = $(event.currentTarget),
             task = element.parents(this.config.selectors.listItem).first();
         element.data({
             before: this.trimTags(element.html())
         });
+        this.resetSelection();
         this.selectTasks(task);
         task.addClass(this.config.classes.active);
     }, this);

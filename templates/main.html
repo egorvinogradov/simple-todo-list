@@ -16,11 +16,10 @@
 <script type="text/javascript" src="../static/js/jquery-1.8.1.min.js"></script>
 <script type="text/javascript" src="../static/js/underscore-min.js"></script>
 
-
-
 <script type="application/template" id="list-template">
     <ul class="b-list"><%= tasksHtml %></ul>
 </script>
+
 <script type="application/template" id="list-item-template">
     <li class="b-list-item<% if ( done ) { %> b-list-item_checked<% } %>" data-start="<%= start %>" data-finish="<%= finish %>" data-id="<%= id %>" data-order="<%= order %>">
         <div class="b-list-item__wrapper">
@@ -29,20 +28,6 @@
         <%= tasksHtml %>
     </li>
 </script>
-
-<!--<script type="application/template" id="list-template">-->
-    <!--<ul class="b-list"><%= tasksHtml %></ul>-->
-<!--</script>-->
-<!--<script type="application/template" id="list-item-template">-->
-    <!--<li class="b-list-item<% if ( done ) { %> b-list-item_checked<% } %>" data-start="<%= start %>" data-finish="<%= finish %>" data-id="<%= id %>" data-order="<%= order %>">-->
-        <!--<div class="b-list-item__wrapper">-->
-            <!--<input class="b-list-item__checkbox" tabindex="-1" type="checkbox" <% if ( done ) { %>checked<% } %>>-->
-            <!--<span class="b-list-item__text" spellcheck="false"><%= text %></span>-->
-            <!--<button class="b-list-item__add" tabindex="-1">+ задача</button>-->
-        <!--</div>-->
-        <!--<%= tasksHtml %>-->
-    <!--</li>-->
-<!--</script>-->
 
 <script type="text/javascript" src="../static/js/model.js"></script>
 <script type="text/javascript" src="../static/js/app.js"></script>
