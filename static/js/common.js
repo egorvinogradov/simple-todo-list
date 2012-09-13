@@ -19,7 +19,8 @@ var Config = {
         wrapper: '.b-list-item__wrapper'
     },
     classes: {
-        active: 'b-list-item_active',
+        //active: 'b-list-item_active',
+        focused: 'b-list-item_focused',
         selected: 'b-list-item_selected'
     },
     templates: {

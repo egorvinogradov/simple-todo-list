@@ -95,7 +95,12 @@ button {
     background: #323e41;
 }
 
-.b-list-item__checked + .b-list-item__text {
-    color: rgba(255,255,255,.4);
+.b-list-item_checked .b-list-item__text {
+    color: rgba(255,255,255,.25);
     text-decoration: line-through;
+}
+
+
+.b-list-item_focused > .b-list-item__wrapper {
+    background: green !important;
 }

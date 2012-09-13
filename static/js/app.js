@@ -9,11 +9,12 @@ App.prototype.keyConfig = {
         condition: function(event){
             return event.shiftKey && event.which === 38;
         },
-        behaviour: function(){
+        behaviour: function(event){
             this.changeSelection({
                 up: true,
                 multiple: true
             });
+            event.preventDefault();
         }
     },
     addRowBelowToSelection: {
@@ -25,6 +26,7 @@ App.prototype.keyConfig = {
                 down: true,
                 multiple: true
             });
+            event.preventDefault();
         }
     },
     moveSelectionUp: {
@@ -64,6 +66,15 @@ App.prototype.keyConfig = {
         behaviour: function(event){
             var task = $(event.target).parents(this.config.selectors.listItem);
             this.resolveTask(task);
+        }
+    },
+    addTask: {
+        condition: function(event){
+            return false; // todo: fix
+        },
+        behaviour: function(event){
+            var task = $(event.target).parents(this.config.selectors.listItem);
+            this.addTask(task);
         }
     }
 };
@@ -235,6 +246,10 @@ App.prototype.getSelectedTasks = function(){
     return this.getTasks().filter('.' + this.config.classes.selected);
 };
 
+App.prototype.getFocusedTask = function(){
+    return this.getTasks().filter('.' + this.config.classes.focused);
+};
+
 App.prototype.resetSelection = function(){
     return this.getSelectedTasks().removeClass(this.config.classes.selected);
 };
@@ -255,25 +270,82 @@ App.prototype.changeSelection = function(params){
 
     var tasks = this.getTasks(),
         selected = this.getSelectedTasks(),
+        focused = this.getFocusedTask(),
+        first = selected.first(),
         last = selected.last(),
+        firstIndex,
         lastIndex,
         next;
 
+    // 1 down; no selection - last
+    // 2 up; no selection - first
+
+    // focused is first & up; focused is last &  - first
+    // focused is last & down - last
+
+    // selection down - last
+    // selection up - last
+
+
     if ( selected.length ) {
-        lastIndex = this.getTaskIndex(last),
+        firstIndex = this.getTaskIndex(first);
+        lastIndex = this.getTaskIndex(last);
         next = tasks.eq( params.up ? --lastIndex : ++lastIndex );
     }
 
     if ( params.multiple ) {
+
+//        next = next && next.length
+//            ? next
+//            : params.up
+//                ? tasks.last()
+//                : tasks.first();
+//
+//
+//        if ( !next || !next.length ) {
+//            if ( focused.is(first) ) {
+//                next = params.up
+//                    ? tasks.first()
+//                    : tasks.last();
+//            }
+//            else {
+//                if ( focused.is(last) ) {
+//                    next = params.up
+//                        ? tasks.last()
+//                        : tasks.first();
+//                }
+//                else {
+//                    console.error('XYNTA');
+//                }
+//            }
+//        }
+
 
         next = next && next.length
             ? next
             : params.up
                 ? tasks.last()
                 : tasks.first();
-        params.up
-            ? last.removeClass(this.config.classes.selected)
-            : next.addClass(this.config.classes.selected);
+
+        if ( focused.is(last) ) {
+
+            // initial
+
+            params.up
+                ? last.removeClass(this.config.classes.selected)
+                : next.addClass(this.config.classes.selected);
+        }
+        else {
+            if ( focused.is(first) ) {
+                params.up
+                    ? first.removeClass(this.config.classes.selected)
+                    : next.addClass(this.config.classes.selected);
+            }
+            else {
+                console.error('XYNTA');
+            }
+        }
+
 
         console.log('add row to selection', params.up ? 'above' : 'below', lastIndex, next);
     }
@@ -284,40 +356,16 @@ App.prototype.changeSelection = function(params){
                 ? tasks.last()
                 : tasks.first();
         selected.removeClass(this.config.classes.selected);
+        //tasks.removeClass(this.config.classes.focused);
         next.addClass(this.config.classes.selected)
+            //.addClass(this.config.classes.focused)
             .find(this.config.selectors.text)
-            //.focus();
-            // todo: set focus to input
+            .first()
+            .focus();
+
+        // todo: set caret position
+
     }
-
-
-
-    // console.log('move selection', params.up ? 'up' : 'down', index, next);
-    // xynta
-
-
-    
-//        var tasks = this.getTaskElements(),
-//        selection = this.getSelectedTasks(),
-//        current = this.getTaskIndex( selection.last() ),
-//        next = tasks.eq( params.up ? current - 1 : current + 1 );
-//
-//    if ( params.multiple && !next.length ) {
-//        return;
-//    }
-//    if ( !params.multiple ) {
-//        selection
-//            .children(this.config.selectors.wrapper)
-//            .removeClass(this.config.classes.selected);
-//    }
-//    next = next.length
-//        ? next
-//        : tasks.filter( params.up ? ':last' : ':first' );
-//    next
-//        .children(this.config.selectors.wrapper)
-//        .toggleClass(this.config.classes.selected);
-
-    //console.log('move selection ' + ( params.up ? 'up' : 'down' ) + ( params.multiple ? ', multiple' : '' ), current);
 };
 
 App.prototype.removeTask = function(task){
@@ -374,7 +422,7 @@ App.prototype.bindKeyEvents = function(config){
             task = target.is(this.config.selectors.wrapper)
                 ? target
                 : target.parents(this.config.selectors.wrapper);
-        this.resetSelection();
+        //this.resetSelection(); // todo: fix
         if ( task.length ) {
             this.selectTasks(task.parent());
         }
@@ -391,9 +439,13 @@ App.prototype.bindTextEditingEvents = function(tasks){
         element.data({
             before: this.trimTags(element.html())
         });
-        this.resetSelection();
+        //this.resetSelection(); // todo: fix
         this.selectTasks(task);
-        task.addClass(this.config.classes.active);
+
+        this.getTasks().removeClass(this.config.classes.focused);
+        task.addClass(this.config.classes.focused);
+
+        console.log('on focus');
     }, this);
 
     els._on('blur keyup paste', function(event){
@@ -409,9 +461,14 @@ App.prototype.bindTextEditingEvents = function(tasks){
                 text: text
             });
         }
-        if ( event.type === 'blue' ) {
-            this.getTasks()
-                .removeClass(this.config.classes.active);
-        }
+//        if ( event.type === 'blur' ) {
+//            this.getTasks()
+//                .removeClass(this.config.classes.focused);
+//            console.log('on blur');
+//        }
     }, this);
+};
+
+App.prototype.addTask = function(previousSibling){
+    console.log('add task after', previousSibling);
 };
