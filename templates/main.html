@@ -24,7 +24,7 @@
 <script type="application/template" id="list-item-template">
     <li class="b-list-item<% if ( done ) { %> b-list-item_checked<% } %>" data-start="<%= start %>" data-finish="<%= finish %>" data-id="<%= id %>" data-order="<%= order %>">
         <div class="b-list-item__wrapper">
-            <span class="b-list-item__text" spellcheck="false"><%= text %></span>
+            <input class="b-list-item__text" type="text" value="<%= text %>" spellcheck="false">
         </div>
         <%= tasksHtml %>
     </li>

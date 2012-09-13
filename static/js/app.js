@@ -340,6 +340,7 @@ App.prototype.bindTextEditingEvents = function(tasks){
             before: this.trimTags(element.html())
         });
         this.selectTasks(task);
+        task.addClass(this.config.classes.active);
     }, this);
 
     els._on('blur keyup paste', function(event){
@@ -354,6 +355,10 @@ App.prototype.bindTextEditingEvents = function(tasks){
             this.setModel(id, {
                 text: text
             });
+        }
+        if ( event.type === 'blue' ) {
+            this.getTasks()
+                .removeClass(this.config.classes.active);
         }
     }, this);
 };
