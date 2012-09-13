@@ -17,7 +17,7 @@ button {
     margin: 0;
     font: 14px/18px monospace;
     background: #1b2426;
-    color: #F0F0F0;
+    color: #b9bdb6;
 }
 
 .b-header {
@@ -35,8 +35,8 @@ button {
 .b-list {
     padding: 0 0 18px 32px;
     line-height: 18px;
-    overflow: hidden;
-    clear: both;
+    /*overflow: hidden;*/
+    /*clear: both;*/
     counter-reset: list;
 }
 
@@ -45,7 +45,7 @@ button {
 }
 
 .b-list-item {
-    overflow: hidden;
+    /*overflow: hidden;*/
 }
 
 .b-list-item:before {
@@ -79,18 +79,10 @@ button {
     height: 16px;
     line-height: 16px;
     font-size: 15px;
-    padding: 1px 6px;
+    padding: 1px 11px 1px 6px;
     overflow: hidden;
 }
 
-/*.b-list-item__text:active,*/
-/*.b-list-item__text:focus {*/
-    /*outline: none;*/
-    /*border: 1px solid rgba(255,255,255,.45);*/
-    /*border-radius: 2px;*/
-    /*box-shadow: 0 0 2px 1px rgba(255,255,255,.2);*/
-    /*padding: 0 5px;*/
-/*}*/
 
 /*.b-list-item__add {*/
     /*display: inline-block;*/
@@ -131,12 +123,42 @@ button {
     /*visibility: hidden;*/
 /*}*/
 
-.b-list-item_selected,
-.b-list-item__wrapper:hover {
+/*.b-list-item_selected,*/
+/*.b-list-item__wrapper:hover {*/
+    /*background: #323e41;*/
+/*}*/
+
+
+
+.b-list-item__text:active,
+.b-list-item__text:focus {
+    outline: none;
+}
+
+
+.b-list-item__text::selection {
+    /*background: #323e41;*/
+    /*background: red;*/
+    background: #54696E;
+    color: #fff;
+}
+
+/*.b-list-item__text:active,*/
+/*.b-list-item__text:focus {*/
+    /*outline: none;*/
+    /*border: 1px solid rgba(255,255,255,.4);*/
+    /*border-radius: 3px;*/
+    /*box-shadow: 0 0 2px 1px rgba(255,255,255,.2);*/
+    /*padding: 1px 10px 1px 5px;*/
+    /*margin: -1px 0;*/
+/*}*/
+
+
+.b-list-item_selected > .b-list-item__wrapper {
     background: #323e41;
 }
 
-.b-list-item__checkbox:checked + .b-list-item__text {
+.b-list-item__checked + .b-list-item__text {
     color: rgba(255,255,255,.4);
     text-decoration: line-through;
 }
