@@ -10,7 +10,7 @@ App.prototype.keyConfig = {
             return event.shiftKey && event.which === 38;
         },
         behaviour: function(){
-            this.moveSelection({
+            this.changeSelection({
                 up: true,
                 multiple: true
             });
@@ -21,7 +21,7 @@ App.prototype.keyConfig = {
             return event.shiftKey && event.which === 40;
         },
         behaviour: function(){
-            this.moveSelection({
+            this.changeSelection({
                 down: true,
                 multiple: true
             });
@@ -32,7 +32,7 @@ App.prototype.keyConfig = {
             return !event.shiftKey && event.which === 38;
         },
         behaviour: function(){
-            this.moveSelection({
+            this.changeSelection({
                 up: true
             });
         }
@@ -42,7 +42,7 @@ App.prototype.keyConfig = {
             return !event.shiftKey && event.which === 40;
         },
         behaviour: function(){
-            this.moveSelection({
+            this.changeSelection({
                 down: true
             });
         }
@@ -239,7 +239,73 @@ App.prototype.resetSelection = function(){
     return this.getSelectedTasks().removeClass(this.config.classes.selected);
 };
 
-App.prototype.moveSelection = function(params){
+App.prototype.getTaskIndex = function(task){
+    task = task instanceof jQuery
+        ? task
+        : this.getTasks(task);
+    var tasks = this.getTasks();
+    for ( var index = 0, l = tasks.length; index < l; index++ ) {
+        if ( tasks.eq(index).is(task) ) {
+            return index;
+        }
+    }
+};
+
+App.prototype.changeSelection = function(params){
+
+//    params = {
+//        up: true,
+//        multiple: true;
+//    };
+
+    var tasks = this.getTasks();
+
+
+    if ( params.multiple ) {
+
+        // if add line to selection
+
+        var selected = this.getSelectedTasks().last(),
+            index,
+            next;
+        if ( selected.length ) {
+            index = this.getTaskIndex(selected),
+            next = tasks.eq( params.up ? --index : ++index );
+        }
+        next = next && next.length
+            ? next
+            : params.up
+                ? tasks.last()
+                : tasks.first();
+        //selected.removeClass(this.config.classes.selected);
+        next.addClass(this.config.classes.selected);
+
+
+        console.log('add row to selection', params.up ? 'above' : 'below');
+
+    }
+    else {
+        var selected = this.getSelectedTasks().last(),
+            index,
+            next;
+        if ( selected.length ) {
+            index = this.getTaskIndex(selected),
+            next = tasks.eq( params.up ? --index : ++index );
+        }
+        next = next && next.length
+            ? next
+            : params.up
+                ? tasks.last()
+                : tasks.first();
+        selected.removeClass(this.config.classes.selected);
+        next.addClass(this.config.classes.selected);
+    }
+
+
+
+    // console.log('move selection', params.up ? 'up' : 'down', index, next); // xynta
+
+
     
 //        var tasks = this.getTaskElements(),
 //        selection = this.getSelectedTasks(),
@@ -261,7 +327,7 @@ App.prototype.moveSelection = function(params){
 //        .children(this.config.selectors.wrapper)
 //        .toggleClass(this.config.classes.selected);
 
-    console.log('move selection ' + ( params.up ? 'up' : 'down' ) + ( params.multiple ? ', multiple' : '' ), current);
+    //console.log('move selection ' + ( params.up ? 'up' : 'down' ) + ( params.multiple ? ', multiple' : '' ), current);
 };
 
 App.prototype.removeTask = function(task){
