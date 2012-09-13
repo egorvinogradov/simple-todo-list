@@ -36,6 +36,15 @@ App.prototype.getNodes = function(selectors){
     return nodes;
 };
 
+App.prototype.trimTags = function(str){
+    return str
+        .replace(/(<([^>]+)>)/ig, ' ')
+        .replace(/\n\s+/gm, '\n')
+        .replace(/ +/gm, ' ')
+        .replace(/^\s+/gm, '')
+        .replace(/\s+$/gm, '');
+};
+
 App.prototype.render = function(data, container, callback){
     container
         .html(this.getChildTasksHtml(data, 0));
@@ -124,8 +133,10 @@ App.prototype.setModel = function(id, params){
     if ( this.is_save_timer ) {
         clearTimeout(this.save_timer);
     }
+    params
+        ? this.model.set(id, params)
+        : this.model.remove(id);
     this.is_save_timer = true;
-    this.model.set(id, params);
     this.save_timer = setTimeout($.proxy(function(){
         this.is_save_timer = false;
         this.model.save({
@@ -152,7 +163,7 @@ App.prototype.bindEvents = function(tasks){
         this.bindCheckboxEvents( $(this.config.selectors.checkbox, task) );
         this.bindAddButtonEvents( $(this.config.selectors.add, task) );
     }, this));
-    this.bindKeyEvents();
+    this.bindKeyEvents(this.keys);
 };
 
 App.prototype.bindTextEditingEvents = function(els){
@@ -164,13 +175,15 @@ App.prototype.bindTextEditingEvents = function(els){
     els._on('focus', function(event){
         var element = $(event.currentTarget);
         element.data({
-            before: $.trim(element.html())
+            //before: $.trim(element.html())
+            before: this.trimTags(element.html())
         });
     }, this);
 
     els._on('blur keyup paste', function(event){
         var element = $(event.currentTarget),
-            text = $.trim(element.html()),
+            //text = $.trim(element.html()),
+            text = this.trimTags(element.html()),
             task,
             id;
         if ( element.data('before') !== text ) {
@@ -238,32 +251,89 @@ App.prototype.bindAddButtonEvents = function(els){
     }, this);
 };
 
-App.prototype.bindKeyEvents = function(){
-
-    var _window = $(window);
-
-    _window._on('keydown', function(event){
-        if ( event.shiftKey && event.which === 38 ) { // add row above to selection
+App.prototype.keys = {
+    selectRowAbove: {
+        condition: function(event){
+            return event.shiftKey && event.which === 38;
+        },
+        behaviour: function(){
             this.moveSelection({
                 up: true,
                 multiple: true
             });
         }
-        if ( event.shiftKey && event.which === 40 ) { // add row below to selection
+    },
+    selectRowBelow: {
+        condition: function(event){
+            return event.shiftKey && event.which === 40;
+        },
+        behaviour: function(){
             this.moveSelection({
                 down: true,
                 multiple: true
             });
         }
-        if ( !event.shiftKey && event.which === 38 ) { // move selection up
+    },
+    moveSelectionUp: {
+        condition: function(event){
+            return !event.shiftKey && event.which === 38;
+        },
+        behaviour: function(){
             this.moveSelection({
                 up: true
             });
         }
-        if ( !event.shiftKey && event.which === 40 ) { // move selection down
+    },
+    moveSelectionDown: {
+        condition: function(event){
+            return !event.shiftKey && event.which === 40;
+        },
+        behaviour: function(){
             this.moveSelection({
                 down: true
             });
+        }
+    },
+    removeTask: {
+        condition: function(event){
+            var target = $(event.target);
+            return event.which === 8 && target.is(this.config.selectors.text) && !this.trimTags(target.html());
+        },
+        behaviour: function(event){
+            var id = +$(event.currentTarget)
+                .parents(this.config.selectors.listItem)
+                .data('id');
+            this.removeTask(id);
+            console.log('REMOVE', id, event.target);
+        }
+    },
+    resolveTask: {
+        condition: function(event){
+            return ''
+        },
+        behaviour: function(event){
+
+        }
+    }
+};
+
+App.prototype.bindKeyEvents = function(config){
+
+    var _window = $(window);
+
+    _window._on('keydown', function(event){
+        console.log(
+            'key down',
+            event.currentTarget,
+            event.target,
+            event.which,
+            event.shiftKey ? 'shift' : '',
+            event.ctrlKey ? 'ctrl' : ''
+        );
+        for ( var action in config ) {
+            if ( config[action].condition.call(this, event) ) {
+                config[action].behaviour.call(this, event);
+            }
         }
     }, this);
 
@@ -319,4 +389,11 @@ App.prototype.moveSelection = function(params){
         .toggleClass(this.config.classes.selected);
 
     console.log('move selection ' + ( params.up ? 'up' : 'down' ) + ( params.multiple ? ', multiple' : '' ), current);
+};
+
+App.prototype.removeTask = function(id){
+    $(this.config.selectors.listItem)
+        .filter('[data-id="' + id + '"]')
+        .remove();
+    this.setModel(id, null);
 };

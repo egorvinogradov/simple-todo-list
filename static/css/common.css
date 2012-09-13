@@ -16,96 +16,124 @@ button {
     padding: 20px;
     margin: 0;
     font: 14px/18px monospace;
-    background: #2E3436;
+    background: #1b2426;
     color: #F0F0F0;
 }
 
 .b-header {
     font-size: 15px;
     font-weight: normal;
-    margin-bottom: 20px;
-    color: #EDCD06;
+    margin: 4px 0 20px 0;
+    color: #ffaa3e;
+}
+
+.b-header__pre {
+    padding: 0;
+    margin: 0;
 }
 
 .b-list {
-    padding: 0 0 15px 22px;
-    line-height: 24px;
+    padding: 0 0 18px 32px;
+    line-height: 18px;
     overflow: hidden;
     clear: both;
+    counter-reset: list;
+}
+
+.b-tasks > .b-list {
+    padding-left: 0;
 }
 
 .b-list-item {
+    overflow: hidden;
+}
 
+.b-list-item:before {
+    counter-increment: list;
+    content: counter(list) '.';
+    color: #5ba1cf;
+    font-size: 11px;
+    display: inline-block;
+    width: 30px;
+    float: left;
+    text-align: right;
+    padding-right: 5px;
 }
 
 .b-list-item__wrapper {
     display: block;
-    line-height: 24px;
-    height: 24px;
+    line-height: 18px;
     padding-right: 70px;
 }
 
-.b-list-item__checkbox {
-    position: relative;
-    display: inline-block;
-    vertical-align: baseline;
-    margin: 0 -3px 0 5px;
-}
+/*.b-list-item__checkbox {*/
+    /*position: relative;*/
+    /*display: inline-block;*/
+    /*vertical-align: baseline;*/
+    /*margin: 0 -3px 0 5px;*/
+/*}*/
 
 .b-list-item__text {
     display: inline-block;
     vertical-align: baseline;
-    height: 22px;
+    height: 16px;
+    line-height: 16px;
+    font-size: 15px;
     padding: 1px 6px;
-}
-
-.b-list-item__text:active,
-.b-list-item__text:focus {
-    outline: none;
-    border: 1px solid rgba(255,255,255,.45);
-    border-radius: 2px;
-    box-shadow: 0 0 2px 1px rgba(255,255,255,.2);
-    padding: 0 5px;
-}
-
-.b-list-item__add {
-    display: inline-block;
-    visibility: hidden;
-    padding: 0 7px;
-    border-radius: 4px;
-    line-height: 20px;
-    height: 20px;
     overflow: hidden;
-    text-align: center;
-    font-size: 12px;
-    position: relative;
-    top: -1px;
-    cursor: pointer;
-    vertical-align: baseline;
-    background: rgba(255,255,255,.2);
-    color: #fff;
-    white-space: nowrap;
-    -webkit-transition: background 0.15s;
-       -moz-transition: background 0.15s;
-            transition: background 0.15s;
 }
+
+/*.b-list-item__text:active,*/
+/*.b-list-item__text:focus {*/
+    /*outline: none;*/
+    /*border: 1px solid rgba(255,255,255,.45);*/
+    /*border-radius: 2px;*/
+    /*box-shadow: 0 0 2px 1px rgba(255,255,255,.2);*/
+    /*padding: 0 5px;*/
+/*}*/
+
+/*.b-list-item__add {*/
+    /*display: inline-block;*/
+    /*visibility: hidden;*/
+    /*padding: 0 7px;*/
+    /*border-radius: 4px;*/
+    /*line-height: 20px;*/
+    /*height: 20px;*/
+    /*overflow: hidden;*/
+    /*text-align: center;*/
+    /*font-size: 12px;*/
+    /*position: relative;*/
+    /*top: -1px;*/
+    /*cursor: pointer;*/
+    /*vertical-align: baseline;*/
+    /*background: rgba(255,255,255,.2);*/
+    /*color: #fff;*/
+    /*white-space: nowrap;*/
+    /*-webkit-transition: background 0.15s;*/
+       /*-moz-transition: background 0.15s;*/
+            /*transition: background 0.15s;*/
+/*}*/
+
+/*.b-list-item__wrapper:hover .b-list-item__add {*/
+    /*visibility: visible;*/
+/*}*/
+
+/*.b-list-item__text:hover + .b-list-item__add {*/
+    /*visibility: visible;*/
+/*}*/
+
+/*.b-list-item__add:active {*/
+    /*background: rgba(255,255,255,.4);*/
+    /*color: #fff;*/
+/*}*/
+
+/*.b-list-item__checkbox:checked + .b-list-item__text + .b-list-item__add {*/
+    /*visibility: hidden;*/
+/*}*/
 
 .b-list-item_selected,
 .b-list-item__wrapper:hover {
-    background: #232729;
-}
-
-.b-list-item__wrapper:hover .b-list-item__add {
-    visibility: visible;
-}
-
-.b-list-item__text:hover + .b-list-item__add {
-    visibility: visible;
-}
-
-.b-list-item__add:active {
-    background: rgba(255,255,255,.4);
-    color: #fff;
+    background: #323e41;
 }
 
 .b-list-item__checkbox:checked + .b-list-item__text {
@@ -113,13 +141,11 @@ button {
     text-decoration: line-through;
 }
 
-.b-list-item__checkbox:checked + .b-list-item__text + .b-list-item__add {
-    visibility: hidden;
-}
 
 
-
-
+/*.b-list-item:before {*/
+    /*content: '';*/
+/*}*/
 
 
 /*.b-list-item_checked {*/
