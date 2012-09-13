@@ -253,57 +253,47 @@ App.prototype.getTaskIndex = function(task){
 
 App.prototype.changeSelection = function(params){
 
-//    params = {
-//        up: true,
-//        multiple: true;
-//    };
+    var tasks = this.getTasks(),
+        selected = this.getSelectedTasks(),
+        last = selected.last(),
+        lastIndex,
+        next;
 
-    var tasks = this.getTasks();
-
+    if ( selected.length ) {
+        lastIndex = this.getTaskIndex(last),
+        next = tasks.eq( params.up ? --lastIndex : ++lastIndex );
+    }
 
     if ( params.multiple ) {
 
-        // if add line to selection
-
-        var selected = this.getSelectedTasks().last(),
-            index,
-            next;
-        if ( selected.length ) {
-            index = this.getTaskIndex(selected),
-            next = tasks.eq( params.up ? --index : ++index );
-        }
         next = next && next.length
             ? next
             : params.up
                 ? tasks.last()
                 : tasks.first();
-        //selected.removeClass(this.config.classes.selected);
-        next.addClass(this.config.classes.selected);
+        params.up
+            ? last.removeClass(this.config.classes.selected)
+            : next.addClass(this.config.classes.selected);
 
-
-        console.log('add row to selection', params.up ? 'above' : 'below');
-
+        console.log('add row to selection', params.up ? 'above' : 'below', lastIndex, next);
     }
     else {
-        var selected = this.getSelectedTasks().last(),
-            index,
-            next;
-        if ( selected.length ) {
-            index = this.getTaskIndex(selected),
-            next = tasks.eq( params.up ? --index : ++index );
-        }
         next = next && next.length
             ? next
             : params.up
                 ? tasks.last()
                 : tasks.first();
         selected.removeClass(this.config.classes.selected);
-        next.addClass(this.config.classes.selected);
+        next.addClass(this.config.classes.selected)
+            .find(this.config.selectors.text)
+            //.focus();
+            // todo: set focus to input
     }
 
 
 
-    // console.log('move selection', params.up ? 'up' : 'down', index, next); // xynta
+    // console.log('move selection', params.up ? 'up' : 'down', index, next);
+    // xynta
 
 
     
