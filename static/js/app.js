@@ -300,7 +300,7 @@ App.prototype.keys = {
             return event.which === 8 && target.is(this.config.selectors.text) && !this.trimTags(target.html());
         },
         behaviour: function(event){
-            var id = +$(event.currentTarget)
+            var id = +$(event.target)
                 .parents(this.config.selectors.listItem)
                 .data('id');
             this.removeTask(id);
