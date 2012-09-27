@@ -295,59 +295,12 @@ App.prototype.changeSelection = function(params){
 
     if ( params.multiple ) {
 
-//        next = next && next.length
-//            ? next
-//            : params.up
-//                ? tasks.last()
-//                : tasks.first();
-//
-//
-//        if ( !next || !next.length ) {
-//            if ( focused.is(first) ) {
-//                next = params.up
-//                    ? tasks.first()
-//                    : tasks.last();
-//            }
-//            else {
-//                if ( focused.is(last) ) {
-//                    next = params.up
-//                        ? tasks.last()
-//                        : tasks.first();
-//                }
-//                else {
-//                    console.error('XYNTA');
-//                }
-//            }
-//        }
 
-
-        next = next && next.length
-            ? next
-            : params.up
-                ? tasks.last()
-                : tasks.first();
-
-        if ( focused.is(last) ) {
-
-            // initial
-
-            params.up
-                ? last.removeClass(this.config.classes.selected)
-                : next.addClass(this.config.classes.selected);
-        }
-        else {
-            if ( focused.is(first) ) {
-                params.up
-                    ? first.removeClass(this.config.classes.selected)
-                    : next.addClass(this.config.classes.selected);
-            }
-            else {
-                console.error('XYNTA');
-            }
-        }
 
 
         console.log('add row to selection', params.up ? 'above' : 'below', lastIndex, next);
+
+
     }
     else {
         next = next && next.length
@@ -401,73 +354,78 @@ App.prototype.resolveTask = function(task){
 };
 
 App.prototype.bindEvents = function(){
-    var tasks = this.getTasks();
-    this.selectTasks(tasks.first());
-    this.bindKeyEvents(this.keyConfig);
-    this.bindTextEditingEvents(tasks);
+    var tasks = this.getTasks(),
+        texts = tasks.find(this.config.selectors.text);
+    $(window)
+        ._on('keydown', this.onWindowKeydown, this)
+        ._on('click', this.onWindowClick, this);
+    texts
+        ._on('focus', this.onInputStart, this)
+        ._on('blur keyup paste', this.onInputComplete, this);
+    texts
+        .first()
+        .focus()
+        .trigger('focus');
 };
 
-App.prototype.bindKeyEvents = function(config){
-    var frame = $(window);
-    frame._on('keydown', function(event){
-        console.log('key down', event.currentTarget, event.target, event.which, event.shiftKey ? 'shift' : '', event.ctrlKey ? 'ctrl' : '');
-        for ( var action in config ) {
-            if ( config[action].condition.call(this, event) ) {
-                config[action].behaviour.call(this, event);
-            }
+App.prototype.onWindowKeydown = function(event){
+    console.log('key down', event.currentTarget, event.target, event.which, event.shiftKey ? 'shift' : '', event.ctrlKey ? 'ctrl' : '');
+    var config = this.keyConfig;
+    for ( var action in config ) {
+        if ( config[action].condition.call(this, event) ) {
+            config[action].behaviour.call(this, event);
         }
-    }, this);
-    frame._on('click', function(event){
-        var target = $(event.target),
-            task = target.is(this.config.selectors.wrapper)
-                ? target
-                : target.parents(this.config.selectors.wrapper);
-        //this.resetSelection(); // todo: fix
-        if ( task.length ) {
-            this.selectTasks(task.parent());
-        }
-    }, this);
+    }
 };
 
-App.prototype.bindTextEditingEvents = function(tasks){
+App.prototype.onWindowClick = function(event){
+    var target = $(event.target),
+        task = target.is(this.config.selectors.wrapper)
+            ? target
+            : target.parents(this.config.selectors.wrapper);
 
-    var els = tasks.find(this.config.selectors.text);
+    //this.resetSelection(); // todo: fix
+    
+    if ( task.length ) {
+        this.selectTasks(task.parent());
+    }
+};
 
-    els._on('focus', function(event){
-        var element = $(event.currentTarget),
-            task = element.parents(this.config.selectors.listItem).first();
-        element.data({
-            before: this.trimTags(element.html())
+App.prototype.onInputStart = function(event){
+    var element = $(event.currentTarget),
+        task = element.parents(this.config.selectors.listItem).first();
+    element.data({
+        before: this.trimTags(element.html())
+    });
+
+    //this.resetSelection(); // todo: fix
+
+    this.selectTasks(task);
+    this.getTasks().removeClass(this.config.classes.focused);
+    task.addClass(this.config.classes.focused);
+    console.log('on focus');
+};
+
+App.prototype.onInputComplete = function(event){
+    var element = $(event.currentTarget),
+        text = this.trimTags(element.html()),
+        task,
+        id;
+    if ( element.data('before') !== text ) {
+        element.data({ before: text });
+        task = element.parents(this.config.selectors.listItem);
+        id = +task.data('id');
+        this.setModel(id, {
+            text: text
         });
-        //this.resetSelection(); // todo: fix
-        this.selectTasks(task);
-
-        this.getTasks().removeClass(this.config.classes.focused);
-        task.addClass(this.config.classes.focused);
-
-        console.log('on focus');
-    }, this);
-
-    els._on('blur keyup paste', function(event){
-        var element = $(event.currentTarget),
-            text = this.trimTags(element.html()),
-            task,
-            id;
-        if ( element.data('before') !== text ) {
-            element.data({ before: text });
-            task = element.parents(this.config.selectors.listItem);
-            id = +task.data('id');
-            this.setModel(id, {
-                text: text
-            });
-        }
+    }
 //        if ( event.type === 'blur' ) {
 //            this.getTasks()
 //                .removeClass(this.config.classes.focused);
 //            console.log('on blur');
 //        }
-    }, this);
 };
+
 
 App.prototype.addTask = function(previousSibling){
     console.log('add task after', previousSibling);
