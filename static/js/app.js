@@ -371,8 +371,7 @@ App.prototype.bindEvents = function(){
         ._on('keyup paste', this.onInput, this);
     texts
         .first()
-        .trigger('focus');
-        //.focus();
+        .focus();
 };
 
 App.prototype.onWindowKeydown = function(event){
@@ -402,48 +401,40 @@ App.prototype.onWindowClick = function(event){
 };
 
 App.prototype.onInputStart = function(event){
-
-    console.log('on input start nothing happens');
-    return;
-
-//    var element = $(event.currentTarget),
-//        task = element.parents(this.config.selectors.listItem).first();
-//    element.data({
-//        before: this.trimTags(element.html())
-//    });
-//
-//    //this.resetSelection(); // todo: fix
-//
-//    this.selectTasks(task);
-//    this.getTasks().removeClass(this.config.classes.focused);
-//    task.addClass(this.config.classes.focused);
-//    console.log('on focus', event.shiftKey);
+    var element = $(event.currentTarget),
+        task = element.parents(this.config.selectors.listItem).first();
+    element.data({
+        before: this.trimTags(element.html())
+    });
+    this.getTasks().removeClass(this.config.classes.focused);
+    task.addClass(this.config.classes.focused);
+    console.log('start', task);
 };
 
 App.prototype.onInputEnd = function(event){
 
-    console.log('on input end nothing happens');
-    return;
+    // nothing happens
 
-//    var element = $(event.currentTarget),
-//        text = this.trimTags(element.html()),
-//        task,
-//        id;
-//    if ( element.data('before') !== text ) {
-//        element.data({ before: text });
-//        task = element.parents(this.config.selectors.listItem);
-//        id = +task.data('id');
-//        this.setModel(id, {
-//            text: text
-//        });
-//    }
+    var element = $(event.currentTarget),
+        task = element.parents(this.config.selectors.listItem).first();
+    console.log('end: nothing happens', task);
 };
 
 App.prototype.onInput = function(event){
-    console.log('---------------- on input --------------', event.which);
+    var element = $(event.currentTarget),
+        text = this.trimTags(element.html()),
+        task,
+        id;
+    if ( element.data('before') !== text ) {
+        element.data({ before: text });
+        task = element.parents(this.config.selectors.listItem);
+        id = +task.data('id');
+        this.setModel(id, {
+            text: text
+        });
+        console.log('task changed:', text);
+    }
 };
-
-
 
 App.prototype.addTask = function(previousSibling){
     console.log('add task after', previousSibling);
