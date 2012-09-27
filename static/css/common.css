@@ -79,15 +79,18 @@ button {
     outline: none;
 }
 
-
-/* todo: fix selection color */
-/*.b-list-item__text::selection {*/
-    /*background: green;*/
-    /*color: #fff;*/
-/*}*/
+.b-list-item__text::selection {
+    background: #FF4C63;
+    color: #fff;
+}
 
 .b-list-item__text::-webkit-selection {
-    background: green;
+    background: #FF4C63;
+    color: #fff;
+}
+
+.b-list-item__text::-moz-selection {
+    background: #FF4C63;
     color: #fff;
 }
 
@@ -100,7 +103,6 @@ button {
     text-decoration: line-through;
 }
 
-
 .b-list-item_focused > .b-list-item__wrapper {
-    background: green !important;
+    background: #455559 !important;
 }
