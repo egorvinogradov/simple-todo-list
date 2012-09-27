@@ -86,7 +86,11 @@ App.prototype.init = function(){
     });
     this.model.fetch({
         success: $.proxy(function(){
-            this.render(this.model.toArray(), this.container, $.proxy(this.bindEvents, this));
+            this.render(
+                this.model.toArray(),
+                this.container,
+                $.proxy(this.bindEvents, this)
+            );
         }, this),
         error: $.proxy(function(){
             console.error('Can\'t fetch model');
@@ -295,11 +299,7 @@ App.prototype.changeSelection = function(params){
 
     if ( params.multiple ) {
 
-
-
-
         console.log('add row to selection', params.up ? 'above' : 'below', lastIndex, next);
-
 
     }
     else {
@@ -308,10 +308,9 @@ App.prototype.changeSelection = function(params){
             : params.up
                 ? tasks.last()
                 : tasks.first();
+
         selected.removeClass(this.config.classes.selected);
-        //tasks.removeClass(this.config.classes.focused);
         next.addClass(this.config.classes.selected)
-            //.addClass(this.config.classes.focused)
             .find(this.config.selectors.text)
             .first()
             .focus();
@@ -353,23 +352,43 @@ App.prototype.resolveTask = function(task){
     // todo: update DOM when model.change fires
 };
 
+
+
+
 App.prototype.bindEvents = function(){
-    var tasks = this.getTasks(),
+
+    console.log('bond new events');
+
+    var _window = $(window),
+        tasks = this.getTasks(),
         texts = tasks.find(this.config.selectors.text);
-    $(window)
+    _window
         ._on('keydown', this.onWindowKeydown, this)
         ._on('click', this.onWindowClick, this);
     texts
         ._on('focus', this.onInputStart, this)
-        ._on('blur keyup paste', this.onInputComplete, this);
+        ._on('blur', this.onInputEnd, this)
+        ._on('keyup paste', this.onInput, this);
     texts
         .first()
-        .focus()
         .trigger('focus');
+        //.focus();
 };
 
 App.prototype.onWindowKeydown = function(event){
-    console.log('key down', event.currentTarget, event.target, event.which, event.shiftKey ? 'shift' : '', event.ctrlKey ? 'ctrl' : '');
+
+//    console.log(
+//        'key down',
+//        event.target,
+//        event.which,
+//        event.shiftKey
+//            ? 'shift'
+//            : '',
+//        event.ctrlKey
+//            ? 'ctrl'
+//            : ''
+//    );
+
     var config = this.keyConfig;
     for ( var action in config ) {
         if ( config[action].condition.call(this, event) ) {
@@ -379,52 +398,51 @@ App.prototype.onWindowKeydown = function(event){
 };
 
 App.prototype.onWindowClick = function(event){
-    var target = $(event.target),
-        task = target.is(this.config.selectors.wrapper)
-            ? target
-            : target.parents(this.config.selectors.wrapper);
-
-    //this.resetSelection(); // todo: fix
-    
-    if ( task.length ) {
-        this.selectTasks(task.parent());
-    }
+    console.log('on window click nothing happens');
 };
 
 App.prototype.onInputStart = function(event){
-    var element = $(event.currentTarget),
-        task = element.parents(this.config.selectors.listItem).first();
-    element.data({
-        before: this.trimTags(element.html())
-    });
 
-    //this.resetSelection(); // todo: fix
+    console.log('on input start nothing happens');
+    return;
 
-    this.selectTasks(task);
-    this.getTasks().removeClass(this.config.classes.focused);
-    task.addClass(this.config.classes.focused);
-    console.log('on focus');
+//    var element = $(event.currentTarget),
+//        task = element.parents(this.config.selectors.listItem).first();
+//    element.data({
+//        before: this.trimTags(element.html())
+//    });
+//
+//    //this.resetSelection(); // todo: fix
+//
+//    this.selectTasks(task);
+//    this.getTasks().removeClass(this.config.classes.focused);
+//    task.addClass(this.config.classes.focused);
+//    console.log('on focus', event.shiftKey);
 };
 
-App.prototype.onInputComplete = function(event){
-    var element = $(event.currentTarget),
-        text = this.trimTags(element.html()),
-        task,
-        id;
-    if ( element.data('before') !== text ) {
-        element.data({ before: text });
-        task = element.parents(this.config.selectors.listItem);
-        id = +task.data('id');
-        this.setModel(id, {
-            text: text
-        });
-    }
-//        if ( event.type === 'blur' ) {
-//            this.getTasks()
-//                .removeClass(this.config.classes.focused);
-//            console.log('on blur');
-//        }
+App.prototype.onInputEnd = function(event){
+
+    console.log('on input end nothing happens');
+    return;
+
+//    var element = $(event.currentTarget),
+//        text = this.trimTags(element.html()),
+//        task,
+//        id;
+//    if ( element.data('before') !== text ) {
+//        element.data({ before: text });
+//        task = element.parents(this.config.selectors.listItem);
+//        id = +task.data('id');
+//        this.setModel(id, {
+//            text: text
+//        });
+//    }
 };
+
+App.prototype.onInput = function(event){
+    console.log('---------------- on input --------------', event.which);
+};
+
 
 
 App.prototype.addTask = function(previousSibling){
