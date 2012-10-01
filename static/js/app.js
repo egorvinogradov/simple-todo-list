@@ -21,7 +21,7 @@ App.prototype.keyConfig = {
         condition: function(event){
             return event.shiftKey && event.which === 40;
         },
-        behaviour: function(){
+        behaviour: function(event){
             this.changeSelection({
                 down: true,
                 multiple: true
@@ -33,7 +33,7 @@ App.prototype.keyConfig = {
         condition: function(event){
             return !event.shiftKey && event.which === 38;
         },
-        behaviour: function(){
+        behaviour: function(event){
             this.changeSelection({
                 up: true
             });
@@ -43,7 +43,7 @@ App.prototype.keyConfig = {
         condition: function(event){
             return !event.shiftKey && event.which === 40;
         },
-        behaviour: function(){
+        behaviour: function(event){
             this.changeSelection({
                 down: true
             });
@@ -272,49 +272,54 @@ App.prototype.getTaskIndex = function(task){
 
 App.prototype.changeSelection = function(params){
 
-//    var tasks = this.getTasks(),
-//        selected = this.getSelectedTasks(),
-//        focused = this.getFocusedTask(),
-//        first = selected.first(),
-//        last = selected.last(),
-//        firstIndex,
-//        lastIndex,
-//        next;
-
-
-
-
-
-
     var tasks = this.getTasks(),
         selected = this.getSelectedTasks(),
-        focused = this.getFocusedTask();
-
-
-
-
-    // 1 down; no selection - last
-    // 2 up; no selection - first
-
-    // focused is first & up; focused is last &  - first
-    // focused is last & down - last
-
-    // selection down - last
-    // selection up - last
-
-
-
-//    firstIndex = this.getTaskIndex(first);
-//    lastIndex = this.getTaskIndex(last);
-//    next = tasks.eq( params.up ? --lastIndex : ++lastIndex );
+        focused = this.getFocusedTask(),
+        focusedIndex = this.getTaskIndex(focused);
 
     if ( params.multiple ) {
 
         //console.log('add row to selection', params.up ? 'above' : 'below');
 
+        var newSelection;
+
+        if ( selected.length === 1 ) {
+            if ( params.up ) {
+                if ( focusedIndex > 0 ) {
+                    newSelection = selected.add( tasks.eq(--focusedIndex) );
+                    newSelection
+                        .first()
+                        .find(this.config.selectors.text)
+                        .focus();
+                    this.selectTasks(newSelection);
+                }
+                console.log('add row above 1 \n', newSelection, '\n', newSelection.first());
+            }
+            else {
+                if ( tasks.length > focusedIndex - 1 ) {
+                    newSelection = selected.add( tasks.eq(++focusedIndex) );
+                    newSelection
+                        .last()
+                        .find(this.config.selectors.text)
+                        .focus();
+                    this.selectTasks(newSelection);
+                }
+                console.log('add row below 1 \n', newSelection, '\n', newSelection.last());
+            }
+            return;
+        }
+
         if ( focused.is(selected.first()) && params.up ) {
             // add row above
-            console.log('add row above');
+            if ( focusedIndex > 0 ) {
+                newSelection = selected.add( tasks.eq(--focusedIndex) );
+                newSelection
+                    .first()
+                    .find(this.config.selectors.text)
+                    .focus();
+                this.selectTasks(newSelection);
+                console.log('add row above');
+            }
             return;
         }
 
@@ -334,7 +339,15 @@ App.prototype.changeSelection = function(params){
 
         if ( focused.is(selected.last()) && params.down ) {
             // add row below
-            console.log('add row below');
+            if ( tasks.length > focusedIndex + 1 ) {
+                newSelection = selected.add( tasks.eq(++focusedIndex) );
+                newSelection
+                    .last()
+                    .find(this.config.selectors.text)
+                    .focus();
+                this.selectTasks(newSelection);
+                console.log('add row below');
+            }
             return;
         }
 
@@ -343,19 +356,18 @@ App.prototype.changeSelection = function(params){
     }
     else {
 
-        var next,
-            focusedIndex = this.getTaskIndex(focused);
+        var next;
 
         if ( params.up ) {
             next = tasks.eq(--focusedIndex);
             if ( !next.length ) {
-                next = tasks.eq(--tasks.length);
+                next = tasks.last();
             }
         }
         else {
             next = tasks.eq(++focusedIndex);
             if ( !next.length ) {
-                next = tasks.eq(0);
+                next = tasks.first();
             }
         }
 
@@ -367,7 +379,7 @@ App.prototype.changeSelection = function(params){
             .first()
             .focus();
 
-        // todo: set caret position
+        // todo: set caret position in chrome
 
     }
 };
