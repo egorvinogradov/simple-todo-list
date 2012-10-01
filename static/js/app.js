@@ -242,6 +242,7 @@ App.prototype.selectTasks = function(tasks){
     tasks = tasks instanceof jQuery
         ? tasks
         : this.getTasks(tasks);
+    this.getTasks().removeClass(this.config.classes.selected);
     tasks.addClass(this.config.classes.selected);
     return tasks;
 };
@@ -326,14 +327,26 @@ App.prototype.changeSelection = function(params){
         if ( focused.is(selected.first()) && params.down ) {
             // remove focused row
             // move focus down
-            console.log('remove focused row && move focus down');
+            newSelection = selected.not(focused);
+            newSelection
+                .first()
+                .find(this.config.selectors.text)
+                .focus();
+            this.selectTasks(newSelection);
+            console.log('remove focused row && move focus down', newSelection);
             return;
         }
 
         if ( focused.is(selected.last()) && params.up ) {
             // remove focused row
             // move focus up
-            console.log('add row below && move focus up');
+            newSelection = selected.not(focused);
+            newSelection
+                .last()
+                .find(this.config.selectors.text)
+                .focus();
+            this.selectTasks(newSelection);
+            console.log('remove focused row && move focus up', newSelection);
             return;
         }
 
