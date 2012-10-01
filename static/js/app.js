@@ -347,19 +347,19 @@ App.prototype.changeSelection = function(params){
             focusedIndex = this.getTaskIndex(focused);
 
         if ( params.up ) {
-            next = focused.eq(--focusedIndex);
+            next = tasks.eq(--focusedIndex);
             if ( !next.length ) {
                 next = tasks.eq(--tasks.length);
             }
         }
         else {
-            next = focused.eq(++focusedIndex);
+            next = tasks.eq(++focusedIndex);
             if ( !next.length ) {
                 next = tasks.eq(0);
             }
         }
 
-        console.log('move focus', next);
+        console.log('move focus');
 
         selected.removeClass(this.config.classes.selected);
         next.addClass(this.config.classes.selected)
@@ -460,7 +460,7 @@ App.prototype.onInputStart = function(event){
     });
     this.getTasks().removeClass(this.config.classes.focused);
     task.addClass(this.config.classes.focused);
-    console.log('start', task);
+    //console.log('start', task);
 };
 
 App.prototype.onInputEnd = function(event){
@@ -469,7 +469,7 @@ App.prototype.onInputEnd = function(event){
 
     var element = $(event.currentTarget),
         task = element.parents(this.config.selectors.listItem).first();
-    console.log('end: nothing happens', task);
+    //console.log('end: nothing happens', task);
 };
 
 App.prototype.onInput = function(event){
