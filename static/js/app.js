@@ -357,6 +357,7 @@ App.prototype.changeSelection = function(params){
             if ( updatedTasks && updatedTasks.focused ) {
                 updatedTasks.focused
                     .find(this.config.selectors.text)
+                    .first()
                     .focus();
             }
             return;
@@ -443,6 +444,7 @@ App.prototype.bindEvents = function(){
         .first()
         .addClass(this.config.classes.selected)
         .find(texts)
+        .first()
         .focus();
 };
 
