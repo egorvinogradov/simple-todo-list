@@ -5,7 +5,7 @@ App = function(config){
 };
 
 App.prototype.keyConfig = {
-    addRowAboveToSelection: {
+    changeSelectionByUpKey: {
         condition: function(event){
             return event.shiftKey && event.which === 38;
         },
@@ -16,7 +16,7 @@ App.prototype.keyConfig = {
             event.preventDefault();
         }
     },
-    addRowBelowToSelection: {
+    changeSelectionByDownKey: {
         condition: function(event){
             return event.shiftKey && event.which === 40;
         },
@@ -245,16 +245,20 @@ App.prototype.selectTasks = function(tasks){
     return tasks;
 };
 
+App.prototype.setFocusToTask = function(task){
+    task = task instanceof jQuery
+        ? task
+        : this.getTasks(task);
+    task.find(this.config.selectors.text).first().focus();
+    return task;
+};
+
 App.prototype.getSelectedTasks = function(){
     return this.getTasks().filter('.' + this.config.classes.selected);
 };
 
 App.prototype.getFocusedTask = function(){
     return this.getTasks().filter('.' + this.config.classes.focused);
-};
-
-App.prototype.resetSelection = function(){
-    return this.getSelectedTasks().removeClass(this.config.classes.selected);
 };
 
 App.prototype.getTaskIndex = function(task){
@@ -276,7 +280,6 @@ App.prototype.changeSelection = function(params){
         focused = this.getFocusedTask(),
         focusedIndex = this.getTaskIndex(focused),
         config = {
-
             addRowAboveToSelection: {
                 condition: function(){
                     return ( focused.is(selected.first()) || selected.length === 1 ) && params.up;
@@ -284,7 +287,6 @@ App.prototype.changeSelection = function(params){
                 getUpdatedTasks: function(){
                     if ( focusedIndex > 0 ) {
                         var result = selected.add( tasks.eq(--focusedIndex) );
-                        console.log('add row above');
                         return {
                             selected: result,
                             focused: result.first()
@@ -299,7 +301,6 @@ App.prototype.changeSelection = function(params){
                 getUpdatedTasks: function(){
                     if ( tasks.length > focusedIndex + 1 ) {
                         var result = selected.add( tasks.eq(++focusedIndex) );
-                        console.log('add row below');
                         return {
                             selected: result,
                             focused: result.last()
@@ -313,7 +314,6 @@ App.prototype.changeSelection = function(params){
                 },
                 getUpdatedTasks: function(){
                     var result = selected.not(focused);
-                    console.log('remove focused row && move focus up', result);
                     return {
                         selected: result,
                         focused: result.last()
@@ -326,7 +326,6 @@ App.prototype.changeSelection = function(params){
                 },
                 getUpdatedTasks: function(){
                     var result = selected.not(focused);
-                    console.log('remove focused row && move focus down', result);
                     return {
                         selected: result,
                         focused: result.first()
@@ -337,9 +336,9 @@ App.prototype.changeSelection = function(params){
                 condition: function(){
                     return true;
                 },
-                getUpdatedTasks: function(){
+                getUpdatedTasks: function(){ // TODO: show error?
                     var result = tasks.first();
-                    console.log('OOPS, can\'t change selection', selected, focused, params); // TODO: show error?
+                    console.log('OOPS, can\'t change selection', selected, focused, params);
                     return {
                         selected: result,
                         focused: result
@@ -355,10 +354,7 @@ App.prototype.changeSelection = function(params){
                 this.selectTasks(updatedTasks.selected);
             }
             if ( updatedTasks && updatedTasks.focused ) {
-                updatedTasks.focused
-                    .find(this.config.selectors.text)
-                    .first()
-                    .focus();
+                this.setFocusToTask(updatedTasks.focused);
             }
             return;
         }
@@ -384,10 +380,7 @@ App.prototype.moveSelection = function(params){
         }
     }
     selected.removeClass(this.config.classes.selected);
-    next.addClass(this.config.classes.selected)
-        .find(this.config.selectors.text)
-        .first()
-        .focus();
+    this.setFocusToTask(next.addClass(this.config.classes.selected));
     // todo: set caret position in chrome
 };
 
@@ -423,9 +416,6 @@ App.prototype.resolveTask = function(task){
     // todo: update DOM when model.change fires
 };
 
-
-
-
 App.prototype.bindEvents = function(){
 
     console.log('bind new events');
@@ -440,12 +430,12 @@ App.prototype.bindEvents = function(){
         ._on('focus', this.onInputStart, this)
         ._on('blur', this.onInputEnd, this)
         ._on('keyup paste', this.onInput, this);
-    tasks
-        .first()
-        .addClass(this.config.classes.selected)
-        .find(texts)
-        .first()
-        .focus();
+
+    this.setFocusToTask(
+        tasks
+            .first()
+            .addClass(this.config.classes.selected)
+    );
 };
 
 App.prototype.onWindowKeydown = function(event){
