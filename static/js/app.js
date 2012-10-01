@@ -11,8 +11,7 @@ App.prototype.keyConfig = {
         },
         behaviour: function(event){
             this.changeSelection({
-                up: true,
-                multiple: true
+                up: true
             });
             event.preventDefault();
         }
@@ -23,8 +22,7 @@ App.prototype.keyConfig = {
         },
         behaviour: function(event){
             this.changeSelection({
-                down: true,
-                multiple: true
+                down: true
             });
             event.preventDefault();
         }
@@ -34,7 +32,7 @@ App.prototype.keyConfig = {
             return !event.shiftKey && event.which === 38;
         },
         behaviour: function(event){
-            this.changeSelection({
+            this.moveSelection({
                 up: true
             });
         }
@@ -44,7 +42,7 @@ App.prototype.keyConfig = {
             return !event.shiftKey && event.which === 40;
         },
         behaviour: function(event){
-            this.changeSelection({
+            this.moveSelection({
                 down: true
             });
         }
@@ -276,133 +274,116 @@ App.prototype.changeSelection = function(params){
     var tasks = this.getTasks(),
         selected = this.getSelectedTasks(),
         focused = this.getFocusedTask(),
-        focusedIndex = this.getTaskIndex(focused);
-
-    if ( params.multiple ) {
-
-        var newSelection,
-            config = {
-                addRowAboveToSelection: {
-                    condition: function(){
-                        return ( focused.is(selected.first()) || selected.length === 1 ) && params.up;
-                    },
-                    selection: function(){
-                        // add row above
-                        if ( focusedIndex > 0 ) {
-                            newSelection = selected.add( tasks.eq(--focusedIndex) );
-                            newSelection
-                                .first()
-                                .find(this.config.selectors.text)
-                                .focus();
-                            this.selectTasks(newSelection);
-                            console.log('add row above');
-                        }
-                    }
+        focusedIndex = this.getTaskIndex(focused),
+        config = {
+            
+            addRowAboveToSelection: {
+                condition: function(){
+                    return ( focused.is(selected.first()) || selected.length === 1 ) && params.up;
                 },
-                addRowBelowToSelection: {
-                    condition: function(){
-                        return ( focused.is(selected.last()) || selected.length === 1 ) && params.down;
-                    },
-                    selection: function(){
-                        // add row below
-                        if ( tasks.length > focusedIndex + 1 ) {
-                            newSelection = selected.add( tasks.eq(++focusedIndex) );
-                            newSelection
-                                .last()
-                                .find(this.config.selectors.text)
-                                .focus();
-                            this.selectTasks(newSelection);
-                            console.log('add row below');
-                        }
-                    }
-                },
-                removeRowAboveFromSelection: {
-                    condition: function(){
-                        return focused.is(selected.last()) && params.up;
-                    },
-                    selection: function(){
-                        // remove focused row
-                        // move focus up
-                        newSelection = selected.not(focused);
-                        newSelection
-                            .last()
-                            .find(this.config.selectors.text)
-                            .focus();
-                        this.selectTasks(newSelection);
-                        console.log('remove focused row && move focus up', newSelection);
-                    }
-                },
-                removeRowBelowFromSelection: {
-                    condition: function(){
-                        return focused.is(selected.first()) && params.down;
-                    },
-                    selection: function(){
-                        // remove focused row
-                        // move focus down
-                        newSelection = selected.not(focused);
-                        newSelection
-                            .first()
-                            .find(this.config.selectors.text)
-                            .focus();
-                        this.selectTasks(newSelection);
-                        console.log('remove focused row && move focus down', newSelection);
-                    }
-                },
-                default: {
-                    condition: function(){
-                        return true;
-                    },
-                    selection: function(){
-
-                        console.log('OOPS, can\'t change selection', selected, focused, params);
-
-                        newSelection = tasks.first();
-                        newSelection
-                            .find(this.config.selectors.text)
-                            .focus();
-                        this.selectTasks(newSelection);
-
+                getUpdatedTasks: function(){
+                    if ( focusedIndex > 0 ) {
+                        var result = selected.add( tasks.eq(--focusedIndex) );
+                        console.log('add row above');
+                        return {
+                            selected: result,
+                            focused: result.first()
+                        };
                     }
                 }
-            };
-
-        for ( var behaviour in config ) {
-            if ( config[behaviour].condition.call(this) ) {
-                config[behaviour].selection.call(this);
-                console.log('bb', behaviour);
-                return;
+            },
+            addRowBelowToSelection: {
+                condition: function(){
+                    return ( focused.is(selected.last()) || selected.length === 1 ) && params.down;
+                },
+                getUpdatedTasks: function(){
+                    if ( tasks.length > focusedIndex + 1 ) {
+                        var result = selected.add( tasks.eq(++focusedIndex) );
+                        console.log('add row below');
+                        return {
+                            selected: result,
+                            focused: result.last()
+                        };
+                    }
+                }
+            },
+            removeRowAboveFromSelection: {
+                condition: function(){
+                    return focused.is(selected.last()) && params.up;
+                },
+                getUpdatedTasks: function(){
+                    var result = selected.not(focused);
+                    console.log('remove focused row && move focus up', result);
+                    return {
+                        selected: result,
+                        focused: result.last()
+                    };
+                }
+            },
+            removeRowBelowFromSelection: {
+                condition: function(){
+                    return focused.is(selected.first()) && params.down;
+                },
+                getUpdatedTasks: function(){
+                    var result = selected.not(focused);
+                    console.log('remove focused row && move focus down', result);
+                    return {
+                        selected: result,
+                        focused: result.first()
+                    };
+                }
+            },
+            default: {
+                condition: function(){
+                    return true;
+                },
+                getUpdatedTasks: function(){
+                    var result = tasks.first();
+                    console.log('OOPS, can\'t change selection', selected, focused, params); // TODO: show error?
+                    return {
+                        selected: result,
+                        focused: result
+                    };
+                }
             }
-        }
+        };
 
+    for ( var behaviour in config ) {
+        if ( config[behaviour].condition() ) {
+            var updatedTasks = config[behaviour].getUpdatedTasks();
+            this.selectTasks(updatedTasks.selected);
+            updatedTasks.focused
+                .find(this.config.selectors.text)
+                .focus();
+            return;
+        }
+    }
+};
+
+App.prototype.moveSelection = function(params){
+    var tasks = this.getTasks(),
+        selected = this.getSelectedTasks(),
+        focused = this.getFocusedTask(),
+        focusedIndex = this.getTaskIndex(focused),
+        next;
+    if ( params.up ) {
+        next = tasks.eq(--focusedIndex);
+        if ( !next.length ) {
+            next = tasks.last();
+        }
     }
     else {
-
-        var next;
-
-        if ( params.up ) {
-            next = tasks.eq(--focusedIndex);
-            if ( !next.length ) {
-                next = tasks.last();
-            }
+        next = tasks.eq(++focusedIndex);
+        if ( !next.length ) {
+            next = tasks.first();
         }
-        else {
-            next = tasks.eq(++focusedIndex);
-            if ( !next.length ) {
-                next = tasks.first();
-            }
-        }
-
-        console.log('move focus');
-
-        selected.removeClass(this.config.classes.selected);
-        next.addClass(this.config.classes.selected)
-            .find(this.config.selectors.text)
-            .first()
-            .focus();
-
-        // todo: set caret position in chrome
-
     }
+    selected.removeClass(this.config.classes.selected);
+    next.addClass(this.config.classes.selected)
+        .find(this.config.selectors.text)
+        .first()
+        .focus();
+    // todo: set caret position in chrome
 };
 
 App.prototype.removeTask = function(task){
@@ -462,19 +443,6 @@ App.prototype.bindEvents = function(){
 };
 
 App.prototype.onWindowKeydown = function(event){
-
-//    console.log(
-//        'key down',
-//        event.target,
-//        event.which,
-//        event.shiftKey
-//            ? 'shift'
-//            : '',
-//        event.ctrlKey
-//            ? 'ctrl'
-//            : ''
-//    );
-
     var config = this.keyConfig;
     for ( var action in config ) {
         if ( config[action].condition.call(this, event) ) {
