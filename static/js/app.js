@@ -310,7 +310,7 @@ App.prototype.changeSelection = function(params){
 
     if ( params.multiple ) {
 
-        console.log('add row to selection', params.up ? 'above' : 'below');
+        //console.log('add row to selection', params.up ? 'above' : 'below');
 
         if ( focused.is(selected.first()) && params.up ) {
             // add row above
@@ -421,8 +421,10 @@ App.prototype.bindEvents = function(){
         ._on('focus', this.onInputStart, this)
         ._on('blur', this.onInputEnd, this)
         ._on('keyup paste', this.onInput, this);
-    texts
+    tasks
         .first()
+        .addClass(this.config.classes.selected)
+        .find(texts)
         .focus();
 };
 
