@@ -274,7 +274,6 @@ App.prototype.getTaskIndex = function(task){
 };
 
 App.prototype.changeSelection = function(params){
-
     var tasks = this.getTasks(),
         selected = this.getSelectedTasks(),
         focused = this.getFocusedTask(),
@@ -385,6 +384,9 @@ App.prototype.moveSelection = function(params){
 };
 
 App.prototype.removeTask = function(task){
+
+    // todo: fix
+
     var taskEl,
         taskId;
     if ( task instanceof jQuery ) {
