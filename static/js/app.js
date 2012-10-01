@@ -272,14 +272,26 @@ App.prototype.getTaskIndex = function(task){
 
 App.prototype.changeSelection = function(params){
 
+//    var tasks = this.getTasks(),
+//        selected = this.getSelectedTasks(),
+//        focused = this.getFocusedTask(),
+//        first = selected.first(),
+//        last = selected.last(),
+//        firstIndex,
+//        lastIndex,
+//        next;
+
+
+
+
+
+
     var tasks = this.getTasks(),
         selected = this.getSelectedTasks(),
-        focused = this.getFocusedTask(),
-        first = selected.first(),
-        last = selected.last(),
-        firstIndex,
-        lastIndex,
-        next;
+        focused = this.getFocusedTask();
+
+
+
 
     // 1 down; no selection - last
     // 2 up; no selection - first
@@ -291,23 +303,63 @@ App.prototype.changeSelection = function(params){
     // selection up - last
 
 
-    if ( selected.length ) {
-        firstIndex = this.getTaskIndex(first);
-        lastIndex = this.getTaskIndex(last);
-        next = tasks.eq( params.up ? --lastIndex : ++lastIndex );
-    }
+
+//    firstIndex = this.getTaskIndex(first);
+//    lastIndex = this.getTaskIndex(last);
+//    next = tasks.eq( params.up ? --lastIndex : ++lastIndex );
 
     if ( params.multiple ) {
 
-        console.log('add row to selection', params.up ? 'above' : 'below', lastIndex, next);
+        console.log('add row to selection', params.up ? 'above' : 'below');
+
+        if ( focused.is(selected.first()) && params.up ) {
+            // add row above
+            console.log('add row above');
+            return;
+        }
+
+        if ( focused.is(selected.first()) && params.down ) {
+            // remove focused row
+            // move focus down
+            console.log('remove focused row && move focus down');
+            return;
+        }
+
+        if ( focused.is(selected.last()) && params.up ) {
+            // remove focused row
+            // move focus up
+            console.log('add row below && move focus up');
+            return;
+        }
+
+        if ( focused.is(selected.last()) && params.down ) {
+            // add row below
+            console.log('add row below');
+            return;
+        }
+
+        console.log('OOPS, can\'t change selection', selected, focused, params);
 
     }
     else {
-        next = next && next.length
-            ? next
-            : params.up
-                ? tasks.last()
-                : tasks.first();
+
+        var next,
+            focusedIndex = this.getTaskIndex(focused);
+
+        if ( params.up ) {
+            next = focused.eq(--focusedIndex);
+            if ( !next.length ) {
+                next = tasks.eq(--tasks.length);
+            }
+        }
+        else {
+            next = focused.eq(++focusedIndex);
+            if ( !next.length ) {
+                next = tasks.eq(0);
+            }
+        }
+
+        console.log('move focus', next);
 
         selected.removeClass(this.config.classes.selected);
         next.addClass(this.config.classes.selected)
@@ -357,7 +409,7 @@ App.prototype.resolveTask = function(task){
 
 App.prototype.bindEvents = function(){
 
-    console.log('bond new events');
+    console.log('bind new events');
 
     var _window = $(window),
         tasks = this.getTasks(),
