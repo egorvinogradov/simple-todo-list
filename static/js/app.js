@@ -276,7 +276,7 @@ App.prototype.changeSelection = function(params){
         focused = this.getFocusedTask(),
         focusedIndex = this.getTaskIndex(focused),
         config = {
-            
+
             addRowAboveToSelection: {
                 condition: function(){
                     return ( focused.is(selected.first()) || selected.length === 1 ) && params.up;
@@ -351,10 +351,14 @@ App.prototype.changeSelection = function(params){
     for ( var behaviour in config ) {
         if ( config[behaviour].condition() ) {
             var updatedTasks = config[behaviour].getUpdatedTasks();
-            this.selectTasks(updatedTasks.selected);
-            updatedTasks.focused
-                .find(this.config.selectors.text)
-                .focus();
+            if ( updatedTasks && updatedTasks.selected ) {
+                this.selectTasks(updatedTasks.selected);
+            }
+            if ( updatedTasks && updatedTasks.focused ) {
+                updatedTasks.focused
+                    .find(this.config.selectors.text)
+                    .focus();
+            }
             return;
         }
     }
