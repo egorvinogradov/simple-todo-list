@@ -280,91 +280,99 @@ App.prototype.changeSelection = function(params){
 
     if ( params.multiple ) {
 
-        //console.log('add row to selection', params.up ? 'above' : 'below');
+        var newSelection,
+            config = {
+                addRowAboveToSelection: {
+                    condition: function(){
+                        return ( focused.is(selected.first()) || selected.length === 1 ) && params.up;
+                    },
+                    selection: function(){
+                        // add row above
+                        if ( focusedIndex > 0 ) {
+                            newSelection = selected.add( tasks.eq(--focusedIndex) );
+                            newSelection
+                                .first()
+                                .find(this.config.selectors.text)
+                                .focus();
+                            this.selectTasks(newSelection);
+                            console.log('add row above');
+                        }
+                    }
+                },
+                addRowBelowToSelection: {
+                    condition: function(){
+                        return ( focused.is(selected.last()) || selected.length === 1 ) && params.down;
+                    },
+                    selection: function(){
+                        // add row below
+                        if ( tasks.length > focusedIndex + 1 ) {
+                            newSelection = selected.add( tasks.eq(++focusedIndex) );
+                            newSelection
+                                .last()
+                                .find(this.config.selectors.text)
+                                .focus();
+                            this.selectTasks(newSelection);
+                            console.log('add row below');
+                        }
+                    }
+                },
+                removeRowAboveFromSelection: {
+                    condition: function(){
+                        return focused.is(selected.last()) && params.up;
+                    },
+                    selection: function(){
+                        // remove focused row
+                        // move focus up
+                        newSelection = selected.not(focused);
+                        newSelection
+                            .last()
+                            .find(this.config.selectors.text)
+                            .focus();
+                        this.selectTasks(newSelection);
+                        console.log('remove focused row && move focus up', newSelection);
+                    }
+                },
+                removeRowBelowFromSelection: {
+                    condition: function(){
+                        return focused.is(selected.first()) && params.down;
+                    },
+                    selection: function(){
+                        // remove focused row
+                        // move focus down
+                        newSelection = selected.not(focused);
+                        newSelection
+                            .first()
+                            .find(this.config.selectors.text)
+                            .focus();
+                        this.selectTasks(newSelection);
+                        console.log('remove focused row && move focus down', newSelection);
+                    }
+                },
+                default: {
+                    condition: function(){
+                        return true;
+                    },
+                    selection: function(){
 
-        var newSelection;
+                        console.log('OOPS, can\'t change selection', selected, focused, params);
 
-        if ( selected.length === 1 ) {
-            if ( params.up ) {
-                if ( focusedIndex > 0 ) {
-                    newSelection = selected.add( tasks.eq(--focusedIndex) );
-                    newSelection
-                        .first()
-                        .find(this.config.selectors.text)
-                        .focus();
-                    this.selectTasks(newSelection);
+                        newSelection = tasks.first();
+                        newSelection
+                            .find(this.config.selectors.text)
+                            .focus();
+                        this.selectTasks(newSelection);
+
+                    }
                 }
-                console.log('add row above 1 \n', newSelection, '\n', newSelection.first());
+            };
+
+        for ( var behaviour in config ) {
+            if ( config[behaviour].condition.call(this) ) {
+                config[behaviour].selection.call(this);
+                console.log('bb', behaviour);
+                return;
             }
-            else {
-                if ( tasks.length > focusedIndex - 1 ) {
-                    newSelection = selected.add( tasks.eq(++focusedIndex) );
-                    newSelection
-                        .last()
-                        .find(this.config.selectors.text)
-                        .focus();
-                    this.selectTasks(newSelection);
-                }
-                console.log('add row below 1 \n', newSelection, '\n', newSelection.last());
-            }
-            return;
         }
-
-        if ( focused.is(selected.first()) && params.up ) {
-            // add row above
-            if ( focusedIndex > 0 ) {
-                newSelection = selected.add( tasks.eq(--focusedIndex) );
-                newSelection
-                    .first()
-                    .find(this.config.selectors.text)
-                    .focus();
-                this.selectTasks(newSelection);
-                console.log('add row above');
-            }
-            return;
-        }
-
-        if ( focused.is(selected.first()) && params.down ) {
-            // remove focused row
-            // move focus down
-            newSelection = selected.not(focused);
-            newSelection
-                .first()
-                .find(this.config.selectors.text)
-                .focus();
-            this.selectTasks(newSelection);
-            console.log('remove focused row && move focus down', newSelection);
-            return;
-        }
-
-        if ( focused.is(selected.last()) && params.up ) {
-            // remove focused row
-            // move focus up
-            newSelection = selected.not(focused);
-            newSelection
-                .last()
-                .find(this.config.selectors.text)
-                .focus();
-            this.selectTasks(newSelection);
-            console.log('remove focused row && move focus up', newSelection);
-            return;
-        }
-
-        if ( focused.is(selected.last()) && params.down ) {
-            // add row below
-            if ( tasks.length > focusedIndex + 1 ) {
-                newSelection = selected.add( tasks.eq(++focusedIndex) );
-                newSelection
-                    .last()
-                    .find(this.config.selectors.text)
-                    .focus();
-                this.selectTasks(newSelection);
-                console.log('add row below');
-            }
-            return;
-        }
-
-        console.log('OOPS, can\'t change selection', selected, focused, params);
 
     }
     else {
