@@ -50,11 +50,10 @@ App.prototype.keyConfig = {
     removeTask: {
         condition: function(event){
             var target = $(event.target);
-            return event.which === 8 && target.is(this.config.selectors.text) && !this.trimTags(target.html());
+            return event.which === 8 && target.is(this.config.selectors.text) && !this.trimTags(target.val());
         },
         behaviour: function(event){
             var task = $(event.target).parents(this.config.selectors.listItem).first();
-            console.log('olol', task);
             this.removeTask(task);
         }
     },
@@ -431,10 +430,7 @@ App.prototype.bindEvents = function(){
         ._on('focus', this.onInputStart, this)
         ._on('blur', this.onInputEnd, this)
         ._on('keyup paste', this.onInput, this)
-        ._on('mousedown', this.onInputClick, this)
-        .each(function(i, element){
-            element.contentEditable = true;
-        });
+        ._on('mousedown', this.onInputClick, this);
     this.setFocusToTask(
         tasks
             .first()
@@ -477,7 +473,7 @@ App.prototype.onInputEnd = function(event){
 
 App.prototype.onInput = function(event){
     var element = $(event.currentTarget),
-        text = this.trimTags(element.html()),
+        text = this.trimTags(element.val()),
         task,
         id;
     if ( element.data('before') !== text ) {
