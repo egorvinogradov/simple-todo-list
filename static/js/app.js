@@ -53,7 +53,8 @@ App.prototype.keyConfig = {
             return event.which === 8 && target.is(this.config.selectors.text) && !this.trimTags(target.html());
         },
         behaviour: function(event){
-            var task = $(event.target).parents(this.config.selectors.listItem);
+            var task = $(event.target).parents(this.config.selectors.listItem).first();
+            console.log('olol', task);
             this.removeTask(task);
         }
     },
@@ -384,10 +385,8 @@ App.prototype.moveSelection = function(params){
 };
 
 App.prototype.removeTask = function(task){
-
-    // todo: fix
-
     var taskEl,
+        taskParentEl,
         taskId;
     if ( task instanceof jQuery ) {
         taskEl = task;
@@ -398,7 +397,10 @@ App.prototype.removeTask = function(task){
         taskEl = this.getTasks(taskId);
     }
     this.setModel(taskId, null);
-    taskEl.remove();
+    taskParentEl = taskEl.parent();
+    taskParentEl.children().length === 1
+        ? taskParentEl.remove()
+        : taskEl.remove();
 };
 
 App.prototype.resolveTask = function(task){
@@ -419,9 +421,6 @@ App.prototype.resolveTask = function(task){
 };
 
 App.prototype.bindEvents = function(){
-
-    console.log('bind new events');
-
     var _window = $(window),
         tasks = this.getTasks(),
         texts = tasks.find(this.config.selectors.text);
@@ -431,8 +430,11 @@ App.prototype.bindEvents = function(){
     texts
         ._on('focus', this.onInputStart, this)
         ._on('blur', this.onInputEnd, this)
-        ._on('keyup paste', this.onInput, this);
-
+        ._on('keyup paste', this.onInput, this)
+        ._on('mousedown', this.onInputClick, this)
+        .each(function(i, element){
+            element.contentEditable = true;
+        });
     this.setFocusToTask(
         tasks
             .first()
@@ -461,15 +463,15 @@ App.prototype.onInputStart = function(event){
     });
     this.getTasks().removeClass(this.config.classes.focused);
     task.addClass(this.config.classes.focused);
-    //console.log('start', task);
+};
+
+App.prototype.onInputClick = function(event){
+    var element = $(event.currentTarget),
+        task = element.parents(this.config.selectors.listItem).first();
+    this.selectTasks(task);
 };
 
 App.prototype.onInputEnd = function(event){
-
-    // nothing happens
-
-    var element = $(event.currentTarget),
-        task = element.parents(this.config.selectors.listItem).first();
     //console.log('end: nothing happens', task);
 };
 
@@ -485,7 +487,6 @@ App.prototype.onInput = function(event){
         this.setModel(id, {
             text: text
         });
-        console.log('task changed:', text);
     }
 };
 
