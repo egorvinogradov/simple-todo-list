@@ -59,7 +59,8 @@ App.prototype.keyConfig = {
     },
     resolveTask: {
         condition: function(event){
-            return false; // todo: fix
+            var target = $(event.target);
+            return event.which === 81 && event.ctrlKey && target.is(this.config.selectors.text);
         },
         behaviour: function(event){
             var task = $(event.target).parents(this.config.selectors.listItem);
@@ -68,7 +69,8 @@ App.prototype.keyConfig = {
     },
     addTask: {
         condition: function(event){
-            return false; // todo: fix
+            var target = $(event.target);
+            return event.which === 13 && target.is(this.config.selectors.text);
         },
         behaviour: function(event){
             var task = $(event.target).parents(this.config.selectors.listItem);
@@ -273,6 +275,73 @@ App.prototype.getTaskIndex = function(task){
     }
 };
 
+App.prototype.bindEvents = function(){
+    var _window = $(window),
+        tasks = this.getTasks(),
+        texts = tasks.find(this.config.selectors.text);
+    _window
+        ._on('keydown', this.onWindowKeydown, this)
+        ._on('click', this.onWindowClick, this);
+    texts
+        ._on('focus', this.onInputStart, this)
+        ._on('blur', this.onInputEnd, this)
+        ._on('keyup paste', this.onInput, this)
+        ._on('mousedown', this.onInputClick, this);
+    this.setFocusToTask(
+        tasks
+            .first()
+            .addClass(this.config.classes.selected)
+    );
+};
+
+App.prototype.onWindowKeydown = function(event){
+    var config = this.keyConfig;
+    for ( var action in config ) {
+        if ( config[action].condition.call(this, event) ) {
+            config[action].behaviour.call(this, event);
+        }
+    }
+};
+
+App.prototype.onWindowClick = function(event){
+    console.log('on window click nothing happens');
+};
+
+App.prototype.onInputStart = function(event){
+    var element = $(event.currentTarget),
+        task = element.parents(this.config.selectors.listItem).first();
+    element.data({
+        before: this.trimTags(element.html())
+    });
+    this.getTasks().removeClass(this.config.classes.focused);
+    task.addClass(this.config.classes.focused);
+};
+
+App.prototype.onInputClick = function(event){
+    var element = $(event.currentTarget),
+        task = element.parents(this.config.selectors.listItem).first();
+    this.selectTasks(task);
+};
+
+App.prototype.onInputEnd = function(event){
+    //console.log('end: nothing happens', task);
+};
+
+App.prototype.onInput = function(event){
+    var element = $(event.currentTarget),
+        text = this.trimTags(element.val()),
+        task,
+        id;
+    if ( element.data('before') !== text ) {
+        element.data({ before: text });
+        task = element.parents(this.config.selectors.listItem);
+        id = +task.data('id');
+        this.setModel(id, {
+            text: text
+        });
+    }
+};
+
 App.prototype.changeSelection = function(params){
     var tasks = this.getTasks(),
         selected = this.getSelectedTasks(),
@@ -383,6 +452,10 @@ App.prototype.moveSelection = function(params){
     // todo: set caret position in chrome
 };
 
+App.prototype.addTask = function(previousSibling){
+    console.log('add task after', previousSibling);
+};
+
 App.prototype.removeTask = function(task){
     var taskEl,
         taskParentEl,
@@ -417,75 +490,4 @@ App.prototype.resolveTask = function(task){
         done: true
     });
     // todo: update DOM when model.change fires
-};
-
-App.prototype.bindEvents = function(){
-    var _window = $(window),
-        tasks = this.getTasks(),
-        texts = tasks.find(this.config.selectors.text);
-    _window
-        ._on('keydown', this.onWindowKeydown, this)
-        ._on('click', this.onWindowClick, this);
-    texts
-        ._on('focus', this.onInputStart, this)
-        ._on('blur', this.onInputEnd, this)
-        ._on('keyup paste', this.onInput, this)
-        ._on('mousedown', this.onInputClick, this);
-    this.setFocusToTask(
-        tasks
-            .first()
-            .addClass(this.config.classes.selected)
-    );
-};
-
-App.prototype.onWindowKeydown = function(event){
-    var config = this.keyConfig;
-    for ( var action in config ) {
-        if ( config[action].condition.call(this, event) ) {
-            config[action].behaviour.call(this, event);
-        }
-    }
-};
-
-App.prototype.onWindowClick = function(event){
-    console.log('on window click nothing happens');
-};
-
-App.prototype.onInputStart = function(event){
-    var element = $(event.currentTarget),
-        task = element.parents(this.config.selectors.listItem).first();
-    element.data({
-        before: this.trimTags(element.html())
-    });
-    this.getTasks().removeClass(this.config.classes.focused);
-    task.addClass(this.config.classes.focused);
-};
-
-App.prototype.onInputClick = function(event){
-    var element = $(event.currentTarget),
-        task = element.parents(this.config.selectors.listItem).first();
-    this.selectTasks(task);
-};
-
-App.prototype.onInputEnd = function(event){
-    //console.log('end: nothing happens', task);
-};
-
-App.prototype.onInput = function(event){
-    var element = $(event.currentTarget),
-        text = this.trimTags(element.val()),
-        task,
-        id;
-    if ( element.data('before') !== text ) {
-        element.data({ before: text });
-        task = element.parents(this.config.selectors.listItem);
-        id = +task.data('id');
-        this.setModel(id, {
-            text: text
-        });
-    }
-};
-
-App.prototype.addTask = function(previousSibling){
-    console.log('add task after', previousSibling);
 };
