@@ -63,7 +63,7 @@ App.prototype.keyConfig = {
             return event.which === 81 && event.ctrlKey && target.is(this.config.selectors.text);
         },
         behaviour: function(event){
-            var task = $(event.target).parents(this.config.selectors.listItem);
+            var task = $(event.target).parents(this.config.selectors.listItem); // todo: fix
             this.resolveTask(task);
         }
     },
@@ -507,7 +507,8 @@ App.prototype.removeTask = function(task){
 
 App.prototype.resolveTask = function(task){
     var taskEl,
-        taskId;
+        taskId,
+        isDone;
     if ( task instanceof jQuery ) {
         taskEl = task;
         taskId = +taskEl.data('id');
@@ -516,8 +517,9 @@ App.prototype.resolveTask = function(task){
         taskId = task;
         taskEl = this.getTasks(taskId);
     }
+    isDone = taskEl.hasClass(this.config.classes.done);
     this.setModel(taskId, {
-        done: true
+        done: !isDone
     });
-    // todo: update DOM when model.change fires
+    taskEl.toggleClass(this.config.classes.done);
 };
