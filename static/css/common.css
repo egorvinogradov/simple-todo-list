@@ -98,7 +98,7 @@ button {
     background: #323e41;
 }
 
-.b-list-item_checked .b-list-item__text {
+.b-list-item_done .b-list-item__text {
     color: rgba(255,255,255,.25);
     text-decoration: line-through;
 }

@@ -104,14 +104,6 @@ App.prototype.init = function(){
     }, this);
 };
 
-App.prototype.getNodes = function(selectors){
-    var nodes = {};
-    for ( var name in selectors ) {
-        nodes[name] = $(selectors[name]);
-    }
-    return nodes;
-};
-
 App.prototype.trimTags = function(str){
     return str
         .replace(/(<([^>]+)>)/ig, ' ')
@@ -275,23 +267,46 @@ App.prototype.getTaskIndex = function(task){
     }
 };
 
+App.prototype.getNewTaskId = function(){
+    var model = this.model.toArray(),
+        largestId = 0;
+    for ( var i = 0, l = model.length; i < l; i++ ) {
+        largestId = Math.max(largestId, model[i].id);
+    }
+    return ++largestId;
+};
+
+App.prototype.getTaskParentId = function(taskEl){
+    var parentId = +taskEl
+        .parents(this.config.selectors.listItem)
+        .first()
+        .data('id');
+    return parentId || 0;
+};
+
 App.prototype.bindEvents = function(){
     var _window = $(window),
-        tasks = this.getTasks(),
-        texts = tasks.find(this.config.selectors.text);
+        tasks = this.getTasks();
     _window
         ._on('keydown', this.onWindowKeydown, this)
         ._on('click', this.onWindowClick, this);
-    texts
-        ._on('focus', this.onInputStart, this)
-        ._on('blur', this.onInputEnd, this)
-        ._on('keyup paste', this.onInput, this)
-        ._on('mousedown', this.onInputClick, this);
+    tasks.each($.proxy(function(i, element){
+        this.bindTaskEvents( $(element) );
+    }, this));
     this.setFocusToTask(
         tasks
             .first()
             .addClass(this.config.classes.selected)
     );
+};
+
+App.prototype.bindTaskEvents = function(taskEl){
+    var taskInputEl = taskEl.find(this.config.selectors.text);
+    taskInputEl
+        ._on('focus', this.onInputStart, this)
+        ._on('blur', this.onInputEnd, this)
+        ._on('keyup paste', this.onInput, this)
+        ._on('mousedown', this.onInputClick, this);
 };
 
 App.prototype.onWindowKeydown = function(event){
@@ -453,7 +468,22 @@ App.prototype.moveSelection = function(params){
 };
 
 App.prototype.addTask = function(previousSibling){
-    console.log('add task after', previousSibling);
+    var taskData = {
+            id: this.getNewTaskId(),
+            parent: this.getTaskParentId(previousSibling),
+            text: this.config.newTaskText,
+            start: new Date().toISOString(),
+            finish: null,
+            done: false,
+            order: null,
+            tasksHtml: ''
+        },
+        taskHtml = _.template(this.config.templates.listItem, taskData),
+        taskEl = $(taskHtml);
+    previousSibling.after(taskEl);
+    this.bindTaskEvents(taskEl);
+    this.setFocusToTask(taskEl);
+    this.selectTasks(taskEl);
 };
 
 App.prototype.removeTask = function(task){
