@@ -25,7 +25,7 @@
         <div class="b-list-item__wrapper">
             <input class="b-list-item__text" type="text" value="<%= text %>" data-before="<%= text %>" spellcheck="false">
         </div>
-        <%= tasksHtml %>
+        <% if ( typeof tasksHtml !== 'undefined' && tasksHtml ){ %><%= tasksHtml %><% } %>
     </li>
 </script>
 

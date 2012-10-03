@@ -230,21 +230,18 @@ App.prototype.getTasks = function(ids){
     return result;
 };
 
-App.prototype.selectTasks = function(tasks){
-    tasks = tasks instanceof jQuery
-        ? tasks
-        : this.getTasks(tasks);
+App.prototype.selectTasks = function(taskEls){
     this.getTasks().removeClass(this.config.classes.selected);
-    tasks.addClass(this.config.classes.selected);
-    return tasks;
+    taskEls.addClass(this.config.classes.selected);
+    return taskEls;
 };
 
-App.prototype.setFocusToTask = function(task){
-    task = task instanceof jQuery
-        ? task
-        : this.getTasks(task);
-    task.find(this.config.selectors.text).first().focus();
-    return task;
+App.prototype.setFocusToTask = function(taskEl){
+    taskEl
+        .find(this.config.selectors.text)
+        .first()
+        .focus();
+    return taskEl;
 };
 
 App.prototype.getSelectedTasks = function(){
@@ -255,13 +252,10 @@ App.prototype.getFocusedTask = function(){
     return this.getTasks().filter('.' + this.config.classes.focused);
 };
 
-App.prototype.getTaskIndex = function(task){
-    task = task instanceof jQuery
-        ? task
-        : this.getTasks(task);
+App.prototype.getTaskIndex = function(taskEl){
     var tasks = this.getTasks();
     for ( var index = 0, l = tasks.length; index < l; index++ ) {
-        if ( tasks.eq(index).is(task) ) {
+        if ( tasks.eq(index).is(taskEl) ) {
             return index;
         }
     }
@@ -293,11 +287,10 @@ App.prototype.bindEvents = function(){
     tasks.each($.proxy(function(i, element){
         this.bindTaskEvents( $(element) );
     }, this));
-    this.setFocusToTask(
-        tasks
-            .first()
-            .addClass(this.config.classes.selected)
-    );
+    tasks
+        .first()
+        .addClass(this.config.classes.selected);
+    this.setFocusToTask(tasks);
 };
 
 App.prototype.bindTaskEvents = function(taskEl){
@@ -419,9 +412,8 @@ App.prototype.changeSelection = function(params){
                 condition: function(){
                     return true;
                 },
-                getUpdatedTasks: function(){ // TODO: show error?
+                getUpdatedTasks: function(){
                     var result = tasks.first();
-                    console.log('OOPS, can\'t change selection', selected, focused, params);
                     return {
                         selected: result,
                         focused: result
@@ -449,19 +441,15 @@ App.prototype.moveSelection = function(params){
         selected = this.getSelectedTasks(),
         focused = this.getFocusedTask(),
         focusedIndex = this.getTaskIndex(focused),
-        next;
-    if ( params.up ) {
-        next = tasks.eq(--focusedIndex);
+        next = params.up
+            ? tasks.eq(--focusedIndex)
+            : tasks.eq(++focusedIndex);
+
         if ( !next.length ) {
-            next = tasks.last();
+            next = params.up
+                ? tasks.last()
+                : tasks.first();
         }
-    }
-    else {
-        next = tasks.eq(++focusedIndex);
-        if ( !next.length ) {
-            next = tasks.first();
-        }
-    }
     selected.removeClass(this.config.classes.selected);
     this.setFocusToTask(next.addClass(this.config.classes.selected));
     // todo: set caret position in chrome
@@ -475,8 +463,7 @@ App.prototype.addTask = function(previousSibling){
             start: new Date().toISOString(),
             finish: null,
             done: false,
-            order: null,
-            tasksHtml: ''
+            order: null
         },
         taskHtml = _.template(this.config.templates.listItem, taskData),
         taskEl = $(taskHtml);
@@ -486,38 +473,18 @@ App.prototype.addTask = function(previousSibling){
     this.selectTasks(taskEl);
 };
 
-App.prototype.removeTask = function(task){
-    var taskEl,
-        taskParentEl,
-        taskId;
-    if ( task instanceof jQuery ) {
-        taskEl = task;
-        taskId = +taskEl.data('id');
-    }
-    else {
-        taskId = task;
-        taskEl = this.getTasks(taskId);
-    }
+App.prototype.removeTask = function(taskEl){
+    var taskId = +taskEl.data('id'),
+        taskParentEl = taskEl.parent();
     this.setModel(taskId, null);
-    taskParentEl = taskEl.parent();
     taskParentEl.children().length === 1
         ? taskParentEl.remove()
         : taskEl.remove();
 };
 
-App.prototype.resolveTask = function(task){
-    var taskEl,
-        taskId,
-        isDone;
-    if ( task instanceof jQuery ) {
-        taskEl = task;
-        taskId = +taskEl.data('id');
-    }
-    else {
-        taskId = task;
-        taskEl = this.getTasks(taskId);
-    }
-    isDone = taskEl.hasClass(this.config.classes.done);
+App.prototype.resolveTask = function(taskEl){
+    var taskId = +taskEl.data('id'),
+        isDone = taskEl.hasClass(this.config.classes.done);
     this.setModel(taskId, {
         done: !isDone
     });
