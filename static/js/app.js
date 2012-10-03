@@ -7,7 +7,7 @@ App = function(config){
 App.prototype.keyConfig = {
     changeSelectionByUpKey: {
         condition: function(event){
-            return event.shiftKey && event.which === 38;
+            return event.shiftKey && event.which === 38; // up arrow + shift
         },
         behaviour: function(event){
             this.changeSelection({
@@ -18,7 +18,7 @@ App.prototype.keyConfig = {
     },
     changeSelectionByDownKey: {
         condition: function(event){
-            return event.shiftKey && event.which === 40;
+            return event.shiftKey && event.which === 40;  // down arrow + shift
         },
         behaviour: function(event){
             this.changeSelection({
@@ -29,7 +29,7 @@ App.prototype.keyConfig = {
     },
     moveSelectionUp: {
         condition: function(event){
-            return !event.shiftKey && event.which === 38;
+            return !event.shiftKey && event.which === 38;  // up arrow
         },
         behaviour: function(event){
             this.moveSelection({
@@ -39,7 +39,7 @@ App.prototype.keyConfig = {
     },
     moveSelectionDown: {
         condition: function(event){
-            return !event.shiftKey && event.which === 40;
+            return !event.shiftKey && event.which === 40;  // down arrow
         },
         behaviour: function(event){
             this.moveSelection({
@@ -50,7 +50,7 @@ App.prototype.keyConfig = {
     removeTask: {
         condition: function(event){
             var target = $(event.target);
-            return event.which === 8 && target.is(this.config.selectors.text) && !this.trimTags(target.val());
+            return event.which === 8 && target.is(this.config.selectors.text) && !this.trimTags(target.val());  // backspace key while task has no text
         },
         behaviour: function(event){
             var task = $(event.target).parents(this.config.selectors.listItem).first();
@@ -60,17 +60,17 @@ App.prototype.keyConfig = {
     resolveTask: {
         condition: function(event){
             var target = $(event.target);
-            return event.which === 81 && event.ctrlKey && target.is(this.config.selectors.text);
+            return event.which === 81 && event.ctrlKey && target.is(this.config.selectors.text);  // ctrl+Q
         },
         behaviour: function(event){
-            var task = $(event.target).parents(this.config.selectors.listItem); // todo: fix
+            var task = $(event.target).parents(this.config.selectors.listItem).first();
             this.resolveTask(task);
         }
     },
     addTask: {
         condition: function(event){
             var target = $(event.target);
-            return event.which === 13 && target.is(this.config.selectors.text);
+            return event.which === 13 && target.is(this.config.selectors.text); // enter
         },
         behaviour: function(event){
             var task = $(event.target).parents(this.config.selectors.listItem);

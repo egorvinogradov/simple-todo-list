@@ -98,6 +98,11 @@ button {
     background: #323e41;
 }
 
+/*.b-list-item_done > .b-list-item__wrapper > .b-list-item__text {*/
+    /*color: rgba(255,255,255,.25);*/
+    /*text-decoration: line-through;*/
+/*}*/
+
 .b-list-item_done .b-list-item__text {
     color: rgba(255,255,255,.25);
     text-decoration: line-through;
