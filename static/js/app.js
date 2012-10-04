@@ -80,6 +80,7 @@ App.prototype.keyConfig = {
 };
 
 App.prototype.init = function(){
+    this.is_active = true;
     this.container = $(this.config.selectors.container);
     this.model = new Model({
         url: this.config.url
@@ -280,11 +281,12 @@ App.prototype.getTaskParentId = function(taskEl){
 };
 
 App.prototype.bindEvents = function(){
-    var _window = $(window),
-        tasks = this.getTasks();
-    _window
-        ._on('keydown', this.onWindowKeydown, this)
-        ._on('click', this.onWindowClick, this);
+    var tasks = this.getTasks(),
+        handlers = {
+            keydown: this.onWindowKeydown,
+            click: this.onWindowClick
+        };
+    this.bindEventsToElement( $(window), handlers );
     tasks.each($.proxy(function(i, element){
         this.bindTaskEvents( $(element) );
     }, this));
@@ -295,12 +297,25 @@ App.prototype.bindEvents = function(){
 };
 
 App.prototype.bindTaskEvents = function(taskEl){
-    var taskInputEl = taskEl.find(this.config.selectors.text);
-    taskInputEl
-        ._on('focus', this.onInputStart, this)
-        ._on('blur', this.onInputEnd, this)
-        ._on('keyup paste', this.onInput, this)
-        ._on('mousedown', this.onInputClick, this);
+    var taskInputEl = taskEl.find(this.config.selectors.text),
+        handlers = {
+            focus: this.onInputStart,
+            blur: this.onInputEnd,
+            keyup: this.onInput,
+            paste: this.onInput,
+            mousedown: this.onInputClick
+        };
+    this.bindEventsToElement(taskInputEl, handlers);
+};
+
+App.prototype.bindEventsToElement = function(element, handlers){
+    _.each(handlers, function(handler, eventName){
+        element._on(eventName, function(event){
+            if ( this.is_active ) {
+                handler.call(this, event);
+            }
+        }, this);
+    }, this);
 };
 
 App.prototype.onWindowKeydown = function(event){
@@ -317,6 +332,7 @@ App.prototype.onWindowClick = function(event){
 };
 
 App.prototype.onInputStart = function(event){
+    console.log()
     var element = $(event.currentTarget),
         task = element.parents(this.config.selectors.listItem).first();
     element.data({
