@@ -97,7 +97,7 @@ App.prototype.init = function(){
         }, this)
     });
     this.model.on('change', function(id, changes){
-        console.log('*** model change', id, changes, '|', arguments, this);
+        //console.log('*** model change', id, changes, '|', arguments, this);
     }, this);
     this.model.on('revert', function(){
         console.log('*** model revert', arguments, this);
@@ -208,6 +208,7 @@ App.prototype.setModel = function(id, params){
         this.is_save_timer = false;
         this.model.save({
             success: $.proxy(function(){
+                console.log('Saved model');
             }, this),
             error:$.proxy(function(data){
                 console.error('Can\'t save model', data);
@@ -456,8 +457,9 @@ App.prototype.moveSelection = function(params){
 };
 
 App.prototype.addTask = function(previousSibling){
-    var taskData = {
-            id: this.getNewTaskId(),
+    var taskId = this.getNewTaskId(),
+        taskData = {
+            id: taskId,
             parent: this.getTaskParentId(previousSibling),
             text: this.config.newTaskText,
             start: new Date().toISOString(),
@@ -467,16 +469,26 @@ App.prototype.addTask = function(previousSibling){
         },
         taskHtml = _.template(this.config.templates.listItem, taskData),
         taskEl = $(taskHtml);
+    this.model.set(taskId, taskData);
     previousSibling.after(taskEl);
     this.bindTaskEvents(taskEl);
     this.setFocusToTask(taskEl);
     this.selectTasks(taskEl);
+
 };
 
 App.prototype.removeTask = function(taskEl){
     var taskId = +taskEl.data('id'),
-        taskParentEl = taskEl.parent();
+        taskIndex = this.getTaskIndex(taskEl),
+        taskParentEl = taskEl.parent(),
+        allTasks = this.getTasks(),
+        previousSibling = allTasks.eq(--taskIndex);
+    if ( !previousSibling.length ) {
+        previousSibling = allTasks.first();
+    }
+    console.log('--', previousSibling);
     this.setModel(taskId, null);
+    this.setFocusToTask(previousSibling);
     taskParentEl.children().length === 1
         ? taskParentEl.remove()
         : taskEl.remove();
