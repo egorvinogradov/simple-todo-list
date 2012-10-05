@@ -5,6 +5,7 @@ App = function(config){
 };
 
 App.prototype.keyConfig = {
+
     changeSelectionByUpKey: {
         condition: function(event){
             return event.shiftKey && event.which === 38; // up arrow + shift
@@ -74,7 +75,7 @@ App.prototype.keyConfig = {
         },
         behaviour: function(event){
             var task = $(event.target).parents(this.config.selectors.listItem);
-            this.addTask(task);
+            this.insertNewTaskAfter(task);
         }
     }
 };
@@ -115,8 +116,32 @@ App.prototype.trimTags = function(str){
 };
 
 App.prototype.render = function(data, container, callback){
-    container
-        .html(this.getChildTasksHtml(data, 0));
+    if ( data && data.length ) {
+        container
+            .html(this.getChildTasksHtml(data, 0));
+    }
+    else {
+        var taskId = this.generateTaskId(),
+            taskData = {
+                id: taskId,
+                parent: 0,
+                text: this.config.newTaskText,
+                start: new Date().toISOString(),
+                finish: null,
+                done: false,
+                order: 0
+            },
+            taskEl = this.createTask(taskData),
+            listEl = this.createList();
+        this.model.set(taskId, taskData);
+
+        console.log(listEl);
+        this.container.append(listEl);
+        listEl.append(taskEl);
+        this.bindTaskEvents(taskEl);
+        this.setFocusToTask(taskEl);
+        this.selectTasks(taskEl);
+    }
     callback();
 };
 
@@ -263,7 +288,7 @@ App.prototype.getTaskIndex = function(taskEl){
     }
 };
 
-App.prototype.getNewTaskId = function(){
+App.prototype.generateTaskId = function(){
     var model = this.model.toArray(),
         largestId = 0;
     for ( var i = 0, l = model.length; i < l; i++ ) {
@@ -272,12 +297,24 @@ App.prototype.getNewTaskId = function(){
     return ++largestId;
 };
 
-App.prototype.getTaskParentId = function(taskEl){
-    var parentId = +taskEl
+App.prototype.getTaskId = function(taskEl){
+    return +taskEl.data('id');
+};
+
+App.prototype.getParentTask = function(taskEl){
+    return taskEl
         .parents(this.config.selectors.listItem)
         .first()
-        .data('id');
-    return parentId || 0;
+};
+
+App.prototype.getTaskOrder = function(taskEl){
+    var defaultOrder = 0;
+    if ( taskEl && taskEl.length ) {
+        return +taskEl.data('order') || 0;
+    }
+    else {
+        return defaultOrder;
+    }
 };
 
 App.prototype.bindEvents = function(){
@@ -332,7 +369,6 @@ App.prototype.onWindowClick = function(event){
 };
 
 App.prototype.onInputStart = function(event){
-    console.log()
     var element = $(event.currentTarget),
         task = element.parents(this.config.selectors.listItem).first();
     element.data({
@@ -472,25 +508,29 @@ App.prototype.moveSelection = function(params){
     // todo: set caret position in chrome
 };
 
-App.prototype.addTask = function(previousSibling){
-    var taskId = this.getNewTaskId(),
+App.prototype.createTask = function(data){
+    var taskHtml = _.template(this.config.templates.listItem, data);
+    return $(taskHtml);
+};
+
+App.prototype.insertNewTaskAfter = function(previousSibling){
+    var taskId = this.generateTaskId(),
+        parentTaskEl = this.getParentTask(previousSibling),
         taskData = {
             id: taskId,
-            parent: this.getTaskParentId(previousSibling),
+            parent: this.getTaskId(parentTaskEl),
             text: this.config.newTaskText,
             start: new Date().toISOString(),
             finish: null,
             done: false,
-            order: null
+            order: this.getTaskOrder(previousSibling) + 1
         },
-        taskHtml = _.template(this.config.templates.listItem, taskData),
-        taskEl = $(taskHtml);
+        taskEl = this.createTask(taskData);
     this.model.set(taskId, taskData);
     previousSibling.after(taskEl);
     this.bindTaskEvents(taskEl);
     this.setFocusToTask(taskEl);
     this.selectTasks(taskEl);
-
 };
 
 App.prototype.removeTask = function(taskEl){
@@ -518,3 +558,16 @@ App.prototype.resolveTask = function(taskEl){
     });
     taskEl.toggleClass(this.config.classes.done);
 };
+
+App.prototype.createList = function(){
+    var listHtml = _.template(this.config.templates.list, {});
+    return $(listHtml);
+};
+
+//App.prototype.appendList = function(listEl, parentTaskEl){
+//    var parent = parentTaskEl && parentTaskEl.length
+//        ? parentTaskEl
+//        : this.container;
+//    parent.append(listEl);
+//    return listEl;
+//};

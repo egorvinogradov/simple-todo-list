@@ -17,7 +17,9 @@
 <script type="text/javascript" src="../static/js/underscore-min.js"></script>
 
 <script type="application/template" id="list-template">
-    <ul class="b-list"><%= tasksHtml %></ul>
+    <ul class="b-list">
+        <% if ( typeof tasksHtml !== 'undefined' && tasksHtml ){ %><%= tasksHtml %><% } %>
+    </ul>
 </script>
 
 <script type="application/template" id="list-item-template">

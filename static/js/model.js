@@ -89,7 +89,7 @@ Model.prototype.revert = function(){
 
 /*
 
-// todo: uncomment when back end will be done
+// todo: uncomment when back-end will be done
 
 Model.prototype.fetch = function(callbacks){
     $.ajax({
@@ -128,7 +128,7 @@ Model.prototype.save = function(callbacks){
 */
 
 Model.prototype.fetch = function(callbacks){
-    var data = JSON.parse(localStorage.getItem('tasks'));
+    var data = JSON.parse(localStorage.getItem('tasks')) || [];
     this._initial = this._copy(data);
     this._current = this._copy(data);
     callbacks.success(data);
