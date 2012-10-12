@@ -136,9 +136,17 @@ Model.prototype.fetch = function(callbacks){
 
 Model.prototype.save = function(callbacks){
     localStorage.setItem('tasks', JSON.stringify(this._current));
-    callbacks.success();
+    callbacks && callbacks.success();
 };
 
+Model.prototype.clear = function(){
+    var ids = $.map(this.toArray(), function(element){
+        return element.id;
+    });
+    for ( var i = 0, l = ids.length; i < l; i++ ) {
+        this.remove(ids[i]);
+    }
+};
 
 Model.prototype.sync = function(){
     // navigator.onLine

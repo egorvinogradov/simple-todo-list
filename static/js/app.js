@@ -1,6 +1,7 @@
 var App;
 
 App = function(config){
+    /** @constructor */
     this.config = config;
 };
 
@@ -136,6 +137,7 @@ App.prototype.render = function(data, container, callback){
         this.model.set(taskId, taskData);
 
         console.log(listEl);
+
         this.container.append(listEl);
         listEl.append(taskEl);
         this.bindTaskEvents(taskEl);
@@ -176,50 +178,19 @@ App.prototype.getChildTasks = function(data, level){
 };
 
 App.prototype.sortTasks = function(data){
-    var sorting = {
-            order: function(a,b){
-                return a.order < b.order ? -1 : 1;
-            },
-            date: function(a,b){
-                var _a = Date.parse(a.start),
-                    _b = Date.parse(b.start);
-                return +_a < +_b ? -1 : 1;
-            }
+    var sortByOrder = function(a,b){
+            return a.order > b.order ? -1 : 1;
         },
-        tasks = {
-            active: {
-                all: [],
-                order: [],
-                date: []
-            },
-            completed: {
-                all: [],
-                order: [],
-                date: []
-            }
-        },
-        concatenated = {};
-
-    for ( var i = 0, l = data.length; i < l; i++ ) {
-        var item = data[i];
-        item.done
-            ? tasks.completed.all.push(item)
-            : tasks.active.all.push(item);
-    }
-    for ( var type in tasks ) {
-        var taskArr = tasks[type].all;
-        for ( var j = 0, n = taskArr.length; j < n; j++ ) {
-            var task = taskArr[j];
-            task.order
-                ? tasks[type].order.push(task)
-                : tasks[type].date.push(task);
-        }
-        concatenated[type] = tasks[type].order
-            .sort(sorting.order)
-            .concat( tasks[type].date.sort(sorting.date) );
-    }
-    return concatenated.active
-        .concat(concatenated.completed);
+        active = [],
+        completed = [];
+    $.each(data, function(i, task){
+        task.done
+            ? completed.push(task)
+            : active.push(task);
+    });
+    return active
+        .sort(sortByOrder)
+        .concat(completed.sort(sortByOrder));
 };
 
 App.prototype.setModel = function(id, params){
@@ -240,7 +211,7 @@ App.prototype.setModel = function(id, params){
                 console.error('Can\'t save model', data);
             }, this)
         });
-    }, this), 1000);
+    }, this), 100); // todo: replace timeout with 1000 (?)
 };
 
 App.prototype.getTasks = function(ids){
@@ -298,7 +269,7 @@ App.prototype.generateTaskId = function(){
 };
 
 App.prototype.getTaskId = function(taskEl){
-    return +taskEl.data('id');
+    return +taskEl.data('id') || 0;
 };
 
 App.prototype.getParentTask = function(taskEl){
@@ -526,6 +497,9 @@ App.prototype.insertNewTaskAfter = function(previousSibling){
             order: this.getTaskOrder(previousSibling) + 1
         },
         taskEl = this.createTask(taskData);
+
+    console.error('inset new task after', parentTaskEl, this.getTaskId(parentTaskEl));
+
     this.model.set(taskId, taskData);
     previousSibling.after(taskEl);
     this.bindTaskEvents(taskEl);
@@ -563,11 +537,3 @@ App.prototype.createList = function(){
     var listHtml = _.template(this.config.templates.list, {});
     return $(listHtml);
 };
-
-//App.prototype.appendList = function(listEl, parentTaskEl){
-//    var parent = parentTaskEl && parentTaskEl.length
-//        ? parentTaskEl
-//        : this.container;
-//    parent.append(listEl);
-//    return listEl;
-//};
