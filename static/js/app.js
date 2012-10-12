@@ -178,19 +178,9 @@ App.prototype.getChildTasks = function(data, level){
 };
 
 App.prototype.sortTasks = function(data){
-    var sortByOrder = function(a,b){
-            return a.order > b.order ? -1 : 1;
-        },
-        active = [],
-        completed = [];
-    $.each(data, function(i, task){
-        task.done
-            ? completed.push(task)
-            : active.push(task);
+    return data.sort(function(a,b){
+        return a.order < b.order ? -1 : 1;
     });
-    return active
-        .sort(sortByOrder)
-        .concat(completed.sort(sortByOrder));
 };
 
 App.prototype.setModel = function(id, params){
