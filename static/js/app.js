@@ -270,12 +270,9 @@ App.prototype.getParentTask = function(taskEl){
 
 App.prototype.getTaskOrder = function(taskEl){
     var defaultOrder = 0;
-    if ( taskEl && taskEl.length ) {
-        return +taskEl.data('order') || 0;
-    }
-    else {
-        return defaultOrder;
-    }
+    return taskEl && taskEl.length
+        ? +taskEl.data('order') || defaultOrder
+        : defaultOrder;
 };
 
 App.prototype.bindEvents = function(){
